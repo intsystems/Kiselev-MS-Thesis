@@ -1,19 +1,23 @@
-\usepackage[T2A]{fontenc}
+\usepackage[T1,T2A]{fontenc}
 \usepackage[utf8]{inputenc}
-\usepackage[english,russian]{babel}
-% \usepackage{cmap}
+\usepackage[main=russian,english]{babel}
+\usepackage{cmap}
 \usepackage{url}
 \usepackage{booktabs}
 \usepackage{nicefrac}
 \usepackage{microtype}
 \usepackage{lipsum}
 \usepackage{graphicx}
-\usepackage{subfig}
 \usepackage[square,sort,comma,numbers]{natbib}
 \usepackage{doi}
 \usepackage{multicol}
 \usepackage{multirow}
+\usepackage{ragged2e}
 \usepackage{tabularx}
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}  % выравнивание по левому краю
+\newcolumntype{C}{>{\centering\arraybackslash}X}    % по центру
+\newcolumntype{R}{>{\raggedleft\arraybackslash}X}   % по правому краю
+\newcolumntype{J}{>{\justifying\arraybackslash}X}   % по ширине
 
 \usepackage{tikz}
 \usetikzlibrary{matrix}
@@ -31,23 +35,8 @@
 \usepackage{amsmath,amsfonts,amssymb,amsthm,mathtools,dsfont}
 \usepackage{icomma}
 
-\usepackage{hyperref}
-\usepackage{xcolor}
-
-\definecolor{linkcolor}{rgb}{0.9,0,0}
-\definecolor{citecolor}{rgb}{0,0.6,0}
-\definecolor{urlcolor}{rgb}{0,0,1}
-
-\hypersetup{
-	unicode=true,
-	pdftitle={TITLE},
-	pdfauthor={AUTHOR},
-	pdfkeywords={KEYWORDS},
-	colorlinks=true,
-	linkcolor=linkcolor,        % внутренние ссылки
-	citecolor=citecolor,         % на библиографию
-	urlcolor=urlcolor           % на URL
-}
+% \usepackage{fontspec} % требует XeLaTeX, а не pdfLaTeX
+% \setmainfont{Times New Roman}
 
 \graphicspath{{figs}}
 
@@ -60,9 +49,9 @@
 
 \usepackage{geometry}
 \geometry{a4paper, top=2cm, bottom=2cm, left=2.5cm, right=1cm}
-\setlength\parindent{5ex}    % Устанавливает длину красной строки 15pt
-%\linespread{1.3}             % Коэффициент межстрочного интервала
+\setlength{\parindent}{1.25cm}
 \usepackage{setspace}
+\onehalfspacing
 \usepackage[center]{titlesec} % секции посередине
 
 %%% Точки после номеров разделов
@@ -73,10 +62,7 @@
 \titlelabel{\thetitle \ }
 
 \usepackage{icomma}
-\usepackage{amsthm}
 \usepackage{graphicx}
-\usepackage{amssymb}
-\usepackage{amsmath}
 \usepackage{graphicx}
 \usepackage{color}
 %\usepackage{bm}
@@ -104,3 +90,39 @@
 \newtheorem*{solution}{Решение}
 
 \renewcommand{\abstractname}{Аннотация}
+
+\usepackage{tocloft}
+\renewcommand{\cftdotsep}{3}
+\renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
+\renewcommand{\cftsubsecleader}{\cftdotfill{\cftdotsep}}
+\renewcommand{\cftsubsubsecleader}{\cftdotfill{\cftdotsep}}
+\setcounter{tocdepth}{2}
+
+\DeclareCaptionLabelSeparator{emdash}{~--- }
+\captionsetup{
+  labelsep=emdash
+}
+
+% \numberwithin{figure}{section}
+% \numberwithin{table}{section}
+
+\captionsetup[figure]{name=Рисунок}
+\captionsetup[table]{name=Таблица}
+
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\definecolor{linkcolor}{rgb}{0.9,0,0}
+\definecolor{citecolor}{rgb}{0,0.6,0}
+\definecolor{urlcolor}{rgb}{0,0,1}
+
+\hypersetup{
+	unicode=true,
+	pdftitle={TITLE},
+	pdfauthor={AUTHOR},
+	pdfkeywords={KEYWORDS},
+	colorlinks=true,
+	linkcolor=linkcolor,        % внутренние ссылки
+	citecolor=citecolor,         % на библиографию
+	urlcolor=urlcolor           % на URL
+}
