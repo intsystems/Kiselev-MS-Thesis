@@ -1,3 +1,140 @@
-\section{Метод}\label{sec2}
+\section{Постановка задачи и общий критерий $p$-сходимости}\label{sec2}
 
-TODO
+В предыдущей главе показано, что существующие способы измерения стабилизации ландшафта функции потерь "--- одноточечная оценка и изотропное среднеквадратичное усреднение в полном пространстве параметров "--- являются частными случаями более общей схемы. Настоящая глава вводит математическую постановку задачи, формулирует унифицированный критерий $p$-сходимости с функцией предпочтения точек в пространстве параметров и устанавливает основные технические леммы, на которых строятся все теоретические результаты главы~\ref{sec3}.
+
+\subsection{Оптимизационная поверхность параметрической модели}\label{subsec:loss-landscape}
+
+Объектом называется пара $(\mathbf{x}, \mathbf{y})$, где $\mathbf{x} \in \mathbb{X}$ "--- признаковое описание, $\mathbf{y} \in \mathbb{Y}$ "--- целевая переменная. Выборка размера~$m$ задается множеством $\mathfrak{D}_m = \{(\mathbf{x}_i, \mathbf{y}_i)\}_{i=1}^m$ из $m$ независимых реализаций пар $(\mathbf{x}, \mathbf{y})$, распределенных согласно неизвестному распределению $p(\mathbf{x}, \mathbf{y})$. Параметрической моделью называется семейство функций $f_{\mathbf{w}}: \mathbb{X} \to \mathbb{Y}$, задаваемое вектором параметров $\mathbf{w} \in \mathbb{R}^{N}$. Выбор модели из этого семейства проводится с помощью эмпирической функции потерь, вычисляемой на заданной выборке:
+\begin{equation}
+    \label{eq:landscape-empirical-loss}
+    \mathcal{L}_m(\mathbf{w}) = \frac{1}{m} \sum_{i=1}^m \ell(f_{\mathbf{w}}(\mathbf{x}_i), \mathbf{y}_i) = \frac{1}{m} \sum_{i=1}^m \ell_i(\mathbf{w}),
+\end{equation}
+где $\ell: \mathbb{Y} \times \mathbb{Y} \to \mathbb{R}^+$ "--- функция потерь на одном объекте. Обучение модели есть решение оптимизационной задачи
+\begin{equation}
+    \label{eq:landscape-min-problem}
+    \mathbf{w}_m^* \in \argmin_{\mathbf{w} \in \mathbb{R}^{N}} \mathcal{L}_m(\mathbf{w}).
+\end{equation}
+
+\emph{Оптимизационной поверхностью} или \emph{ландшафтом функции потерь} называется график $\mathcal{L}_{m}(\mathbf{w})$ как функции от $\mathbf{w} \in \mathbb{R}^N$. Поскольку эмпирическая функция потерь вычисляется по конечной выборке, она случайна, и при другой реализации выборки $\mathfrak{D}_{m}^{\prime}$ множество минимизаторов задачи~\eqref{eq:landscape-min-problem}, как правило, меняется. Согласно закону больших чисел эмпирическая функция потерь сходится к популяционной
+\begin{equation}
+    \label{eq:landscape-theoretical-loss}
+    \mathcal{L}(\mathbf{w}) = \mathbb{E}_{(\mathbf{x},\mathbf{y}) \sim p(\mathbf{x},\mathbf{y})}[\ell(f_{\mathbf{w}}(\mathbf{x}), \mathbf{y})],
+\end{equation}
+поэтому естественно ожидать, что и множество решений~\eqref{eq:landscape-min-problem} стабилизируется. Изменение оптимизационной поверхности вблизи точек минимума~\eqref{eq:landscape-min-problem} при добавлении объектов в обучающую выборку и является основным предметом исследования настоящей работы.
+
+\subsection{Квадратичная аппроксимация в окрестности минимума}\label{subsec:quadratic-approx}
+
+Рассмотрим точку $\mathbf{w}_0 \in \mathbb{R}^{N}$, в окрестности $\mathcal{U}_{R}(\mathbf{w}_0)$ радиуса $R>0$ которой эмпирическая функция потерь $\mathcal{L}_{m}(\mathbf{w})$ дважды непрерывно дифференцируема. На практике это условие выполнено для подавляющего большинства параметрических моделей машинного обучения. По формуле Тейлора с остаточным членом в форме Пеано при $\mathbf{w} \to \mathbf{w}_0$ имеем
+\begin{multline}
+    \label{eq:taylor}
+    \mathcal{L}_{m}(\mathbf{w}) = \mathcal{L}_{m}(\mathbf{w}_0)
+    +
+    \nabla_{\mathbf{w}} \mathcal{L}_{m}(\mathbf{w}_0)^{\top} (\mathbf{w} - \mathbf{w}_0)
+    +
+    \\
+    +
+    \frac{1}{2} (\mathbf{w} - \mathbf{w}_0)^{\top} \nabla^{2}_{\mathbf{w}} \mathcal{L}_{m}(\mathbf{w}_0) (\mathbf{w} - \mathbf{w}_0)
+    +
+    o(\| \mathbf{w} - \mathbf{w}_0 \|_2^2).
+\end{multline}
+Далее, если не оговорено иное, работаем в рамках квадратичной аппроксимации и опускаем остаточный член более высокого порядка. Обозначим вектор градиента и матрицу Гессе функции потерь на выборке размера $m$ через
+\begin{equation}
+    \label{eq:taylor-gradient}
+    \mathbf{g}^{(m)}(\mathbf{w}) = \nabla_{\mathbf{w}} \mathcal{L}_{m}(\mathbf{w}) = \frac{1}{m}\sum_{i=1}^m \mathbf{g}_i(\mathbf{w}) \in \mathbb{R}^{N},
+\end{equation}
+\begin{equation}
+    \label{eq:taylor-hessian}
+    \mathbf{H}^{(m)}(\mathbf{w}) = \nabla^{2}_{\mathbf{w}} \mathcal{L}_{m}(\mathbf{w}) = \frac{1}{m}\sum_{i=1}^m \mathbf{H}_i(\mathbf{w}) \in \mathbb{R}^{N \times N},
+\end{equation}
+где $\mathbf{g}_i(\mathbf{w}) = \nabla_{\mathbf{w}} \ell_i(\mathbf{w})$ и $\mathbf{H}_i(\mathbf{w}) = \nabla^{2}_{\mathbf{w}} \ell_i(\mathbf{w})$ "--- градиент и матрица Гессе функции потерь на отдельном объекте. Формула~\eqref{eq:taylor} в этих обозначениях принимает вид
+\begin{equation}
+    \label{eq:taylor-second-order}
+    \mathcal{L}_{m}(\mathbf{w}) = \mathcal{L}_{m}(\mathbf{w}_0)
+    +
+    \mathbf{g}^{(m)}(\mathbf{w}_0)^{\top} (\mathbf{w} - \mathbf{w}_0)
+    +
+    \frac{1}{2} (\mathbf{w} - \mathbf{w}_0)^{\top} \mathbf{H}^{(m)}(\mathbf{w}_0) (\mathbf{w} - \mathbf{w}_0).
+\end{equation}
+
+\subsection{Разность функций потерь при добавлении одного объекта}\label{subsec:loss-diff}
+
+Добавление одного объекта $(\mathbf{x}_{k+1}, \mathbf{y}_{k+1})$ к обучающей выборке $\mathfrak{D}_k = \{(\mathbf{x}_i, \mathbf{y}_i)\}_{i=1}^k$ размера~$k$ влечет изменение значения эмпирической функции потерь, выражаемое формулой
+\begin{align}
+    \label{eq:losses-difference}
+    \mathcal{L}_{k+1}(\mathbf{w}) - \mathcal{L}_{k}(\mathbf{w})
+    &=
+    \frac{1}{k+1} \sum_{i=1}^{k+1} \ell_{i}(\mathbf{w})
+    -
+    \mathcal{L}_{k}(\mathbf{w})
+    \notag \\
+    &=
+    \frac{1}{k+1} \Big( k \cdot \mathcal{L}_{k}(\mathbf{w}) + \ell_{k+1}(\mathbf{w}) \Big)
+    -
+    \mathcal{L}_{k}(\mathbf{w})
+    \notag \\
+    &=
+    \frac{1}{k+1} \Big( \ell_{k+1}(\mathbf{w}) - \mathcal{L}_{k}(\mathbf{w}) \Big).
+\end{align}
+Дальнейший анализ стабилизации ландшафта целиком построен на исследовании этой разности в окрестности точки минимума. Воспользуемся представлением~\eqref{eq:taylor-second-order} и перепишем~\eqref{eq:losses-difference} в условиях квадратичной аппроксимации:
+\begin{multline}
+    \label{eq:losses-difference-second-order}
+    \mathcal{L}_{k+1}(\mathbf{w}) - \mathcal{L}_{k}(\mathbf{w}) = \mathcal{L}_{k+1}(\mathbf{w}_0) - \mathcal{L}_{k}(\mathbf{w}_0) + \\ + \Big( \mathbf{g}^{(k+1)}(\mathbf{w}_0) - \mathbf{g}^{(k)}(\mathbf{w}_0) \Big)^\top (\mathbf{w} - \mathbf{w}_0) + \\ + \frac{1}{2} (\mathbf{w} - \mathbf{w}_0)^{\top} \left( \mathbf{H}^{(k+1)}(\mathbf{w}_0) - \mathbf{H}^{(k)}(\mathbf{w}_0) \right) (\mathbf{w} - \mathbf{w}_0).
+\end{multline}
+
+Рассмотрим точку минимума $\mathbf{w}_{k}^{*} \in \mathbb{R}^{N}$ эмпирической функции потерь $\mathcal{L}_{k}(\mathbf{w})$. В точке $\mathbf{w} \in \mathcal{U}_{R}(\mathbf{w}_{k}^{*})$ из ее окрестности справедливо представление~\eqref{eq:losses-difference-second-order} с $\mathbf w_0 = \mathbf w_k^*$. В силу необходимого условия локального минимума $\mathbf{g}^{(k)}(\mathbf{w}_{k}^{*}) = \mathbf{0}$, поэтому разность градиентов в линейном члене упрощается:
+\begin{equation}
+    \mathbf{g}^{(k+1)}(\mathbf{w}_{k}^{*}) = \frac{1}{k+1}\Big( k \cdot \cancel{\nabla_{\mathbf{w}}\mathcal{L}_k(\mathbf{w}_k^*)} + \nabla_{\mathbf{w}} \ell_{k+1}(\mathbf{w}_k^*) \Big) = \frac{1}{k+1} \mathbf{g}_{k+1}(\mathbf{w}_k^*),
+\end{equation}
+и формула~\eqref{eq:losses-difference-second-order} принимает вид
+\begin{multline}
+    \label{eq:losses-difference-second-order-minimum}
+    \mathcal{L}_{k+1}(\mathbf{w}) - \mathcal{L}_{k}(\mathbf{w}) = \mathcal{L}_{k+1}(\mathbf{w}_{k}^{*}) - \mathcal{L}_{k}(\mathbf{w}_{k}^{*}) + \mathbf{g}^{(k+1)}(\mathbf{w}_{k}^{*})^\top (\mathbf{w} - \mathbf{w}_{k}^{*}) + \\ + \frac{1}{2} (\mathbf{w} - \mathbf{w}_{k}^{*})^{\top} \left( \mathbf{H}^{(k+1)}(\mathbf{w}_{k}^{*}) - \mathbf{H}^{(k)}(\mathbf{w}_{k}^{*}) \right) (\mathbf{w} - \mathbf{w}_{k}^{*}).
+\end{multline}
+
+Представление~\eqref{eq:losses-difference-second-order-minimum} разлагает изменение ландшафта при добавлении одного объекта на три составляющие: смещение значения функции потерь в точке минимума, линейный вклад через градиент функции потерь на новом объекте и квадратичный вклад через разность матриц Гессе. Этот трехчленный вид используется во всех теоремах главы~\ref{sec3}.
+
+Для получения количественных оценок естественно ввести предположение об ограниченности градиента функции потерь на новом объекте.
+
+\begin{assumption}[О слабом градиентном рассогласовании]
+    \label{assumption:minima}
+    В точке $\mathbf{w}_{k}^{*} \in \mathbb{R}^{N}$ минимума эмпирической функции потерь $\mathcal{L}_{k}(\mathbf{w})$ норма градиента функции потерь на $(k+1)$-м объекте ограничена константой:
+    \begin{equation}
+        \label{eq:assumption-minima}
+        \|\mathbf{g}_{k+1}(\mathbf{w}_{k}^{*})\|_2 \leqslant M_{\mathbf{g}}.
+    \end{equation}
+\end{assumption}
+
+Содержательно предположение~\ref{assumption:minima} означает, что при добавлении одного объекта градиент функции потерь на нем в окрестности уже найденного минимума остается ограниченным. В сочетании с пообъектными ограничениями на $|\ell_i(\mathbf w_k^*)|$ и $\|\mathbf H_i(\mathbf w_k^*)\|_2$ оно дает основу для всех теоретических оценок, доказываемых в главе~\ref{sec3}.
+
+\subsection{Унифицированный критерий $p$-сходимости}\label{subsec:p-criterion}
+
+В предыдущем разделе мы получили явное представление~\eqref{eq:losses-difference-second-order-minimum} изменения поверхности функции потерь в одной точке при добавлении одного объекта. Для измерения этого изменения как глобальной характеристики ландшафта естественно агрегировать локальные приращения по некоторой пробной области пространства параметров. Это приводит к следующему определению.
+
+\begin{definition}
+    \label{def:general-p-criterion}
+    \emph{Критерием $p$-сходимости} ландшафта функции потерь при добавлении одного объекта в выборку $\mathfrak{D}_{k}$ называется величина
+    \begin{equation}
+        \label{eq:general-p-criterion}
+        \Delta_{p}(k+1) = \int \left| \mathcal{L}_{k+1}(\mathbf{w}) - \mathcal{L}_{k}(\mathbf{w}) \right|^{p} q(\mathbf{w}) d\mathbf{w},
+    \end{equation}
+    где $p \geqslant 1$, а функция $q: \mathbb{R}^{N} \to \mathbb{R}^{+}$ задает предпочтение по выбору точек в пространстве параметров модели для оценки сходимости.
+\end{definition}
+
+\begin{remark}
+    Функция предпочтения $q(\mathbf{w})$ неотрицательна. Это позволяет без ограничения общности считать ее плотностью вероятностного распределения на множестве параметров, т.\,е. полагать $\int q(\mathbf{w}) d\mathbf{w} = 1$. Тогда критерий~\eqref{eq:general-p-criterion} есть $L_p$-норма приращения функции потерь по этому распределению.
+\end{remark}
+
+Критерий~\eqref{eq:general-p-criterion} задает достаточно общий способ измерения изменения ландшафта функции потерь при добавлении одного нового объекта в обучающую выборку. Выбор степени $p$ определяет способ агрегации локальных изменений поверхности, а функция предпочтения $q(\mathbf w)$ позволяет выделить те области пространства параметров, которые представляют наибольший интерес в конкретной задаче. Такая постановка явно отделяет физический объект (приращение поверхности функции потерь) от наблюдателя (выбор $p$ и $q$); существующие в литературе подходы к измерению стабилизации соответствуют частным выборам пары $(p, q)$.
+
+Покажем это на двух наиболее распространенных частных случаях:
+
+\begin{itemize}
+    \item \emph{Одноточечная оценка.} При $p=1$ и $q(\tilde{\mathbf w})=\delta(\tilde{\mathbf w}-\mathbf w)$, где $\delta(\cdot)$ "--- дельта-функция Дирака, критерий~\eqref{eq:general-p-criterion} сводится к величине $|\mathcal L_{k+1}(\mathbf w)-\mathcal L_k(\mathbf w)|$ в одной фиксированной точке $\mathbf w$ окрестности минимума.
+    \item \emph{Изотропное среднеквадратичное усреднение.} При $p=2$ и $q(\mathbf w)=\mathcal N(\mathbf w_k^*, \sigma^2 \mathbf I_N)$ критерий~\eqref{eq:general-p-criterion} превращается в математическое ожидание квадрата приращения функции потерь по гауссовскому распределению точек с центром в точке минимума.
+\end{itemize}
+
+В главе~\ref{sec3} оба этих частных случая будут проанализированы по отдельности (разделы~\ref{subsec:abs-onepoint} и~\ref{subsec:squared} соответственно), а наряду с ними будет рассмотрен новый частный случай: $p=2$ при функции предпочтения $q(\mathbf w)$, индуцирующей гауссовское распределение в подпространстве ведущих собственных векторов матрицы Гессе (раздел~\ref{subsec:subspace}). Такой выбор $q$ согласуется с эмпирически наблюдаемой анизотропией спектра матрицы Гессе в нейронных сетях и приводит к существенно более слабой зависимости доминирующей константы от размерности пространства параметров, чем при изотропном усреднении.
+
+\subsection{Выводы по главе}\label{subsec:chapter2-conclusions}
+
+В данной главе сформулирована постановка задачи стабилизации ландшафта функции потерь при увеличении объема обучающей выборки. Получено явное представление~\eqref{eq:losses-difference-second-order-minimum} разности функций потерь в окрестности минимума как суммы трех вкладов: смещения значения функции потерь, линейного вклада через градиент на новом объекте и квадратичного вклада через разность матриц Гессе. Введен унифицированный критерий $p$-сходимости~\eqref{eq:general-p-criterion} с функцией предпочтения точек $q(\mathbf w)$, охватывающий одноточечную оценку и изотропное среднеквадратичное усреднение в качестве частных случаев и допускающий, в частности, ограничение пробной области на подпространство наибольшей кривизны. Сформулировано предположение~\ref{assumption:minima} о слабом градиентном рассогласовании, на основе которого в главе~\ref{sec3} получены количественные оценки скорости убывания различных частных случаев критерия~\eqref{eq:general-p-criterion}.

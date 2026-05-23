@@ -1,3 +1,770 @@
-\section{Вычислительный эксперимент}\label{sec3}
+\section{Критерии стабилизации ландшафта и теоретические оценки}\label{sec3}
 
-TODO
+В предыдущей главе для измерения изменения поверхности эмпирической функции потерь при добавлении одного объекта в обучающую выборку был введен общий критерий $p$-сходимости~\eqref{eq:general-p-criterion} с функцией предпочтения точек $q(\mathbf{w})$ в пространстве параметров. Настоящая глава посвящена анализу трех частных случаев этого критерия, допускающих явные теоретические оценки скорости убывания при увеличении объема обучающей выборки, а также вопросам их алгоритмического вычисления и контроля входящих в оценки констант.
+
+В разделе~\ref{subsec:abs-onepoint} рассматривается абсолютный одноточечный критерий $\Delta_1$, измеряющий изменение функции потерь в одной фиксированной точке окрестности минимума; для него доказывается оценка порядка $\mathcal O(k^{-1})$. В разделе~\ref{subsec:squared} вводится среднеквадратичный критерий $\Delta_2$, в котором изменение ландшафта усредняется по гауссовскому распределению точек в полном пространстве параметров; для него устанавливается оценка $\mathcal O(k^{-2})$. В разделе~\ref{subsec:subspace} строится аналогичный среднеквадратичный критерий $\Delta_2^{(D)}$ в подпространстве, натянутом на ведущие собственные векторы матрицы Гессе, и для него доказывается оценка того же порядка с заменой зависимости от размерности пространства параметров на зависимость от размерности подпространства~$D$. В разделе~\ref{subsec:hessian-bound} приводится утверждение о верхней оценке спектральной нормы гаусс"--~ньютоновской компоненты матрицы Гессе для полносвязных нейронных сетей, обеспечивающее явный контроль константы~$M_{\mathbf H}$, входящей в полученные оценки. В разделе~\ref{subsec:algorithms} обсуждаются масштабируемые алгоритмы вычисления критериев в моделях большой размерности.
+
+\subsection{Абсолютный одноточечный критерий сходимости}\label{subsec:abs-onepoint}
+
+Наиболее простым частным случаем критерия~\eqref{eq:general-p-criterion} является ситуация, когда изменение ландшафта измеряется в одной фиксированной точке пространства параметров. Такой подход позволяет получить наиболее прозрачную теоретическую оценку и служит отправной точкой для дальнейших обобщений. Поскольку нас интересует локальная геометрия поверхности функции потерь, естественно рассматривать точки из окрестности локального минимума $\mathbf{w}_{k}^{*}$, где справедлива квадратичная аппроксимация~\eqref{eq:losses-difference-second-order-minimum}.
+
+\begin{definition}
+    \emph{Абсолютным одноточечным критерием сходимости} ландшафта функции потерь при добавлении одного объекта в выборку $\mathfrak{D}_{k}$ называется величина
+    \begin{equation}
+        \label{eq:abs-onepoint-criterion}
+        \Delta_{1}(k+1) = |\mathcal{L}_{k+1}(\mathbf{w}) - \mathcal{L}_{k}(\mathbf{w})|,
+    \end{equation}
+    где~$\mathbf{w} \in \mathcal{U}_{R}(\mathbf{w}_k^*)$ "--- точка из окрестности радиуса $R>0$ минимума~$\mathbf{w}_k^*$.
+\end{definition}
+
+\begin{remark}
+    Определение является частным случаем общего критерия~\eqref{eq:general-p-criterion} при $p=1$ и $q(\tilde{\mathbf{w}}) = \delta(\tilde{\mathbf{w}} - \mathbf{w})$, где $\delta(\mathbf{w})$ "--- дельта-функция Дирака.
+\end{remark}
+
+В силу формулы~\eqref{eq:losses-difference-second-order-minimum} абсолютный одноточечный критерий определяется тремя вкладами: разностью значений функций потерь в точке минимума~$\mathbf w_k^*$, линейным членом, задаваемым градиентом функции~$\mathcal L_{k+1}$ в этой точке, и квадратичным членом, задаваемым разностью матриц Гессе. Поэтому его оценка сводится к последовательному ограничению каждого из этих вкладов, что приводит к следующему утверждению.
+
+\begin{theorem}
+    \label{thm:abs-onepoint-general}
+    Пусть существует окрестность $\mathcal U_R(\mathbf w_k^*)$ радиуса $R>0$
+    точки локального минимума $\mathbf w_k^* \in \mathbb R^N$ эмпирической
+    функции потерь $\mathcal L_k(\mathbf w)$, такая что в этой окрестности
+    справедлива квадратичная аппроксимация~\eqref{eq:losses-difference-second-order-minimum}.
+    Предположим, что
+    \begin{equation}
+        \label{eq:abs-onepoint-thm-ass-grad}
+        \|\mathbf g_{k+1}(\mathbf w_k^*)\|_2 \leqslant M_{\mathbf g}
+    \end{equation}
+    и для всех $i=1, \ldots, k+1$ выполнены оценки
+    \begin{equation}
+        \label{eq:abs-onepoint-thm-ass-loss}
+        |\ell_i(\mathbf w_k^*)| \leqslant M_\ell,
+    \end{equation}
+    \begin{equation}
+        \label{eq:abs-onepoint-thm-ass-hess}
+        \|\mathbf H_i(\mathbf w_k^*)\|_2 \leqslant M_{\mathbf H}.
+    \end{equation}
+    Тогда для абсолютного одноточечного критерия сходимости верна оценка
+    \begin{equation}
+        \label{eq:abs-onepoint-general-theorem}
+        \Delta_1(k+1)
+        \leqslant
+        \frac{2M_\ell + M_{\mathbf g}R + M_{\mathbf H}R^2}{k+1}
+        = \mathcal{O}(k^{-1}).
+    \end{equation}
+\end{theorem}
+
+\begin{proof}
+    Для точки $\mathbf w \in \mathcal U_R(\mathbf w_k^*)$ из квадратичной аппроксимации~\eqref{eq:losses-difference-second-order-minimum} имеем
+    \begin{multline}
+        \mathcal L_{k+1}(\mathbf w)-\mathcal L_k(\mathbf w)
+        =
+        \mathcal L_{k+1}(\mathbf w_k^*)-\mathcal L_k(\mathbf w_k^*)
+        +
+        \mathbf g^{(k+1)}(\mathbf w_k^*)^\top(\mathbf w-\mathbf w_k^*)
+        +
+        \\
+        +
+        \frac12
+        (\mathbf w-\mathbf w_k^*)^\top
+        \Big(
+            \mathbf H^{(k+1)}(\mathbf w_k^*)
+            -
+            \mathbf H^{(k)}(\mathbf w_k^*)
+        \Big)
+        (\mathbf w-\mathbf w_k^*).
+    \end{multline}
+    Переходя к модулю и применяя неравенство треугольника, получаем
+    \begin{multline}
+        \Delta_1(k+1)
+        \leqslant
+        \left|
+            \mathcal L_{k+1}(\mathbf w_k^*)
+            -
+            \mathcal L_k(\mathbf w_k^*)
+        \right|
+        +
+        \left|
+            \mathbf g^{(k+1)}(\mathbf w_k^*)^\top
+            (\mathbf w-\mathbf w_k^*)
+        \right|
+        +
+        \\
+        +
+        \frac12
+        \left|
+            (\mathbf w-\mathbf w_k^*)^\top
+            \Big(
+                \mathbf H^{(k+1)}(\mathbf w_k^*)
+                -
+                \mathbf H^{(k)}(\mathbf w_k^*)
+            \Big)
+            (\mathbf w-\mathbf w_k^*)
+        \right|.
+    \end{multline}
+    Оценим по отдельности все три слагаемых.
+
+    \textbf{Нулевой член.} Из формулы для разности эмпирических функций потерь в точке $\mathbf w_k^*$ имеем
+    \begin{equation}
+        \mathcal L_{k+1}(\mathbf w_k^*)-\mathcal L_k(\mathbf w_k^*)
+        =
+        \frac{1}{k+1}
+        \Big(
+            \ell_{k+1}(\mathbf w_k^*)-\mathcal L_k(\mathbf w_k^*)
+        \Big),
+    \end{equation}
+    а значит
+    \begin{equation}
+        \left|
+            \mathcal L_{k+1}(\mathbf w_k^*)-\mathcal L_k(\mathbf w_k^*)
+        \right|
+        \leqslant
+        \frac{1}{k+1}
+        \left(
+            |\ell_{k+1}(\mathbf w_k^*)|
+            +
+            |\mathcal L_k(\mathbf w_k^*)|
+        \right).
+    \end{equation}
+    Из неравенства треугольника и~\eqref{eq:abs-onepoint-thm-ass-loss} имеем
+    \begin{equation}
+        |\mathcal L_k(\mathbf w_k^*)|
+        \leqslant
+        \frac{1}{k}\sum_{i=1}^k |\ell_i(\mathbf w_k^*)|
+        \leqslant
+        M_\ell,
+    \end{equation}
+    откуда
+    \begin{equation}
+        \label{eq:abs-onepoint-zeroth}
+        \left|
+            \mathcal L_{k+1}(\mathbf w_k^*)-\mathcal L_k(\mathbf w_k^*)
+        \right|
+        \leqslant
+        \frac{2M_\ell}{k+1}.
+    \end{equation}
+
+    \textbf{Линейный член.} По неравенству Коши"--~Буняковского
+    \begin{equation}
+        \left|
+            \mathbf g^{(k+1)}(\mathbf w_k^*)^\top
+            (\mathbf w-\mathbf w_k^*)
+        \right|
+        \leqslant
+        \|\mathbf g^{(k+1)}(\mathbf w_k^*)\|_2
+        \|\mathbf w-\mathbf w_k^*\|_2.
+    \end{equation}
+    Поскольку $\mathbf g^{(k)}(\mathbf w_k^*)=\mathbf 0$ в силу необходимого условия локального минимума, справедливо
+    \begin{equation}
+        \mathbf g^{(k+1)}(\mathbf w_k^*)
+        =
+        \frac{1}{k+1}
+        \mathbf g_{k+1}(\mathbf w_k^*),
+    \end{equation}
+    и из~\eqref{eq:abs-onepoint-thm-ass-grad} получаем
+    \begin{equation}
+        \label{eq:abs-onepoint-linear}
+        \left|
+            \mathbf g^{(k+1)}(\mathbf w_k^*)^\top
+            (\mathbf w-\mathbf w_k^*)
+        \right|
+        \leqslant
+        \frac{M_{\mathbf g}}{k+1}
+        \|\mathbf w-\mathbf w_k^*\|_2.
+    \end{equation}
+
+    \textbf{Квадратичный член.} По согласованности спектральной нормы
+    \begin{equation}
+        \left|
+            (\mathbf w-\mathbf w_k^*)^\top
+            \Big(
+                \mathbf H^{(k+1)}(\mathbf w_k^*)
+                -
+                \mathbf H^{(k)}(\mathbf w_k^*)
+            \Big)
+            (\mathbf w-\mathbf w_k^*)
+        \right|
+        \leqslant
+        \left\|
+            \mathbf H^{(k+1)}(\mathbf w_k^*)
+            -
+            \mathbf H^{(k)}(\mathbf w_k^*)
+        \right\|_2
+        \|\mathbf w-\mathbf w_k^*\|_2^2.
+    \end{equation}
+    Для разности матриц Гессе справедливо представление
+    \begin{equation}
+        \mathbf H^{(k+1)}(\mathbf w_k^*)
+        -
+        \mathbf H^{(k)}(\mathbf w_k^*)
+        =
+        \frac{1}{k+1}
+        \left(
+            \mathbf H_{k+1}(\mathbf w_k^*)
+            -
+            \mathbf H^{(k)}(\mathbf w_k^*)
+        \right),
+    \end{equation}
+    откуда с учетом~\eqref{eq:abs-onepoint-thm-ass-hess} и оценки $\|\mathbf H^{(k)}(\mathbf w_k^*)\|_2 \leqslant M_{\mathbf H}$, получаемой аналогично оценке для $|\mathcal L_k(\mathbf w_k^*)|$,
+    \begin{equation}
+        \left\|
+            \mathbf H^{(k+1)}(\mathbf w_k^*)
+            -
+            \mathbf H^{(k)}(\mathbf w_k^*)
+        \right\|_2
+        \leqslant
+        \frac{2M_{\mathbf H}}{k+1}.
+    \end{equation}
+    Следовательно,
+    \begin{equation}
+        \label{eq:abs-onepoint-quadratic}
+        \frac12
+        \left|
+            (\mathbf w-\mathbf w_k^*)^\top
+            \Big(
+                \mathbf H^{(k+1)}(\mathbf w_k^*)
+                -
+                \mathbf H^{(k)}(\mathbf w_k^*)
+            \Big)
+            (\mathbf w-\mathbf w_k^*)
+        \right|
+        \leqslant
+        \frac{M_{\mathbf H}}{k+1}
+        \|\mathbf w-\mathbf w_k^*\|_2^2.
+    \end{equation}
+
+    Собирая оценки~\eqref{eq:abs-onepoint-zeroth},~\eqref{eq:abs-onepoint-linear} и~\eqref{eq:abs-onepoint-quadratic} и пользуясь тем, что $\|\mathbf w-\mathbf w_k^*\|_2 \leqslant R$, получаем
+    \begin{equation}
+        \Delta_1(k+1)
+        \leqslant
+        \frac{2M_\ell + M_{\mathbf g}R + M_{\mathbf H}R^2}{k+1}
+        = \mathcal{O}(k^{-1}),
+    \end{equation}
+    что и требовалось доказать.
+\end{proof}
+
+Таким образом, в общем случае абсолютное изменение функции потерь в фиксированной точке локальной окрестности минимума определяется тремя составляющими: смещением значения функции потерь в точке~$\mathbf w_k^*$, градиентным рассогласованием и квадратичным вкладом разности матриц Гессе. При пообъектной ограниченности функции потерь, градиента и матрицы Гессе все три слагаемых имеют порядок~$\mathcal O(k^{-1})$, а значит и абсолютный одноточечный критерий убывает как~$\mathcal O(k^{-1})$. Дальнейшее усреднение по распределению точек в пространстве параметров позволяет получить более быстрый порядок убывания, что показано в следующем разделе.
+
+\subsection{Среднеквадратичный критерий сходимости}\label{subsec:squared}
+
+Одноточечный критерий удобен для получения первичной локальной оценки, однако на практике изменение ландшафта представляет интерес не в одной фиксированной точке, а в некоторой области пространства параметров. Естественным способом учесть такую зависимость является усреднение квадрата разности функций потерь по распределению точек. В отличие от абсолютного одноточечного критерия, такой подход позволяет анализировать не только типичную величину изменения ландшафта, но и чувствительность поверхности к направлениям отклонения от точки минимума.
+
+\begin{definition}
+    \emph{Среднеквадратичным критерием сходимости} ландшафта функции потерь при добавлении одного объекта в выборку $\mathfrak{D}_{k}$ называется величина
+    \begin{equation}
+        \label{eq:squared-criterion}
+        \Delta_{2}(k+1) = \int \big(\mathcal{L}_{k+1}(\mathbf{w}) - \mathcal{L}_{k}(\mathbf{w})\big)^2 q(\mathbf{w}) d\mathbf{w} = \mathbb{E}_{q(\mathbf{w})} \left[ \big( \mathcal{L}_{k+1}(\mathbf{w}) - \mathcal{L}_{k}(\mathbf{w}) \big)^2 \right].
+    \end{equation}
+\end{definition}
+
+\begin{remark}
+    Определение является частным случаем общего критерия~\eqref{eq:general-p-criterion} при $p=2$ и произвольной функции предпочтения $q(\mathbf{w})$, нормированной как плотность вероятностного распределения.
+\end{remark}
+
+В общем случае поведение критерия~\eqref{eq:squared-criterion} зависит от выбора функции предпочтения~$q(\mathbf w)$. Для получения явной аналитической оценки естественно рассмотреть гауссовское распределение с центром в точке локального минимума $q(\mathbf w)=\mathcal N(\mathbf w_k^*, \sigma^2 \mathbf I_N)$. Такой выбор согласуется с локальным характером квадратичной аппроксимации и позволяет использовать известные формулы для моментов квадратичных форм гауссовских векторов.
+
+\begin{theorem}
+    \label{thm:squared-criterion-general}
+    Пусть существует окрестность~$\mathcal U_R(\mathbf w_k^*)$ радиуса $R>0$
+    точки локального минимума~$\mathbf w_k^* \in \mathbb R^N$ эмпирической
+    функции потерь~$\mathcal L_k(\mathbf w)$, такая что в этой окрестности
+    справедлива квадратичная аппроксимация~\eqref{eq:losses-difference-second-order-minimum}.
+    Предположим, что
+    \begin{equation}
+        \label{eq:squared-criterion-thm-ass-grad}
+        \|\mathbf g_{k+1}(\mathbf w_k^*)\|_2 \leqslant M_{\mathbf g}
+    \end{equation}
+    и для всех $i=1, \ldots, k+1$ выполнены оценки
+    \begin{equation}
+        \label{eq:squared-criterion-thm-ass-loss}
+        |\ell_i(\mathbf w_k^*)| \leqslant M_\ell,
+    \end{equation}
+    \begin{equation}
+        \label{eq:squared-criterion-thm-ass-hess}
+        \|\mathbf H_i(\mathbf w_k^*)\|_2 \leqslant M_{\mathbf H}.
+    \end{equation}
+    Тогда для среднеквадратичного критерия сходимости с
+    \begin{equation}
+        q(\mathbf w)=\mathcal N(\mathbf w_k^*, \sigma^2 \mathbf I_N),
+        \qquad
+        \sigma>0,
+    \end{equation}
+    верна оценка
+    \begin{equation}
+        \label{eq:squared-criterion-general-theorem}
+        \Delta_2(k+1)
+        \leqslant
+        \frac{
+            12M_\ell^2
+            +
+            3\sigma^2 M_{\mathbf g}^2
+            +
+            3\sigma^4 (N^2+2N) M_{\mathbf H}^2
+        }{(k+1)^2}
+        = \mathcal{O}(k^{-2}).
+    \end{equation}
+\end{theorem}
+
+\begin{proof}[Схема доказательства]
+    Обозначим $\mathbf v=\mathbf w-\mathbf w_k^*$, $a_k=\mathcal L_{k+1}(\mathbf w_k^*)-\mathcal L_k(\mathbf w_k^*)$, $\mathbf b_k=\mathbf g^{(k+1)}(\mathbf w_k^*)$ и $\mathbf A_k=\mathbf H^{(k+1)}(\mathbf w_k^*)-\mathbf H^{(k)}(\mathbf w_k^*)$. При $\mathbf w \sim \mathcal N(\mathbf w_k^*, \sigma^2\mathbf I_N)$ имеем $\mathbf v\sim \mathcal N(\mathbf 0,\sigma^2 \mathbf I_N)$, и из квадратичной аппроксимации~\eqref{eq:losses-difference-second-order-minimum} следует представление
+    \begin{equation}
+        \mathcal L_{k+1}(\mathbf w)-\mathcal L_k(\mathbf w) = a_k+\mathbf b_k^\top \mathbf v+\tfrac12 \mathbf v^\top \mathbf A_k \mathbf v.
+    \end{equation}
+    Применяя неравенство $(x+y+z)^2 \leqslant 3(x^2+y^2+z^2)$, получаем
+    \begin{equation}
+        \label{eq:squared-three-terms}
+        \Delta_2(k+1) \leqslant 3a_k^2 + 3\,\mathbb E\big[(\mathbf b_k^\top \mathbf v)^2\big] + \tfrac{3}{4}\,\mathbb E\big[(\mathbf v^\top \mathbf A_k \mathbf v)^2\big].
+    \end{equation}
+    Каждое из трех слагаемых оценивается по отдельности.
+
+    Для \emph{нулевого члена} тем же приемом, что и в доказательстве теоремы~\ref{thm:abs-onepoint-general}, получаем $a_k^2 \leqslant 4M_\ell^2/(k+1)^2$. Для \emph{линейного члена} из соотношения $\mathbf b_k=\mathbf g_{k+1}(\mathbf w_k^*)/(k+1)$ и формулы второго момента линейной формы гауссовского вектора $\mathbb E[(\mathbf b_k^\top \mathbf v)^2]=\sigma^2 \|\mathbf b_k\|_2^2$ следует
+    \begin{equation}
+        \mathbb E\big[(\mathbf b_k^\top \mathbf v)^2\big] \leqslant \frac{\sigma^2 M_{\mathbf g}^2}{(k+1)^2}.
+    \end{equation}
+    Для \emph{квадратичного члена} в силу симметричности $\mathbf A_k$ и формулы момента квадратичной формы гауссовского вектора
+    \begin{equation}
+        \mathbb E\big[(\mathbf v^\top \mathbf A_k \mathbf v)^2\big] = 2\sigma^4 \operatorname{Tr}(\mathbf A_k^2) + \sigma^4 \operatorname{Tr}(\mathbf A_k)^2 \leqslant \sigma^4 (N^2+2N)\|\mathbf A_k\|_2^2,
+    \end{equation}
+    а из оценки $\|\mathbf A_k\|_2 \leqslant 2M_{\mathbf H}/(k+1)$ (получаемой так же, как в теореме~\ref{thm:abs-onepoint-general}) следует
+    \begin{equation}
+        \mathbb E\big[(\mathbf v^\top \mathbf A_k \mathbf v)^2\big] \leqslant \frac{4\sigma^4 (N^2+2N)M_{\mathbf H}^2}{(k+1)^2}.
+    \end{equation}
+    Подстановка трех полученных оценок в~\eqref{eq:squared-three-terms} дает~\eqref{eq:squared-criterion-general-theorem}. Полное доказательство, включая выкладки для момента квадратичной формы и оценок следов, приведено в приложении~\ref{app:proof-squared}.
+\end{proof}
+
+Итак, среднеквадратичный критерий определяется тремя источниками рассогласования: разностью значений функций потерь в точке~$\mathbf w_k^*$, градиентным рассогласованием и квадратичным вкладом, связанным с разностью матриц Гессе. После усреднения квадрата по гауссовскому распределению все три слагаемых имеют порядок~$\mathcal O(k^{-2})$, что и дает декларируемую скорость убывания критерия.
+
+Обращает на себя внимание явная зависимость оценки~\eqref{eq:squared-criterion-general-theorem} от размерности пространства параметров через множитель $N^2+2N$ при квадратичном вкладе. В моделях большой размерности этот множитель резко увеличивает доминирующую константу, тогда как фактическое изменение поверхности часто сосредоточено вдоль ограниченного числа направлений, определяемых ведущими собственными векторами матрицы Гессе. Это мотивирует переход к критерию, ограниченному на подпространство наибольшей кривизны, рассматриваемому в следующем разделе.
+
+\subsection{Среднеквадратичный критерий сходимости в подпространстве наибольшей кривизны}\label{subsec:subspace}
+
+Эмпирические исследования глубоких нейронных сетей показывают, что спектр матрицы Гессе $\mathbf H^{(k)}(\mathbf w_k^*)$ обладает выраженно неоднородной структурой: большая часть собственных значений сосредоточена вблизи нуля, тогда как небольшое число выбросов задает основные направления локальной кривизны. Поэтому существенное изменение поверхности функции потерь при добавлении одного объекта в обучающую выборку происходит, как правило, преимущественно вдоль направлений, отвечающих наибольшим собственным значениям матрицы Гессе. Это соображение мотивирует переход от изотропного среднеквадратичного критерия в полном пространстве параметров к его аналогу в подпространстве меньшей размерности, натянутом на главные собственные векторы матрицы Гессе в точке локального минимума~$\mathbf w_k^*$.
+
+\begin{definition}
+    \label{def:principal-curvature-subspace}
+    Пусть
+    \begin{equation}
+        \mathbf H^{(k)}(\mathbf w_k^*) \mathbf u_i = \lambda_i^{(k)} \mathbf u_i,
+        \qquad i=1, \ldots, N,
+    \end{equation}
+    где собственные значения упорядочены по невозрастанию:
+    \begin{equation}
+        \lambda_1^{(k)} \geqslant\lambda_2^{(k)} \geqslant \cdots \geqslant\lambda_N^{(k)},
+    \end{equation}
+    а собственные векторы $\mathbf u_1, \ldots, \mathbf u_N$ образуют ортонормированный базис в $\mathbb R^N$. Обозначим через
+    \begin{equation}
+        \mathbf U_D = [\mathbf u_1, \ldots, \mathbf u_D] \in \mathbb R^{N\times D}
+    \end{equation}
+    матрицу, столбцы которой составлены из $D$ собственных векторов, отвечающих $D$ наибольшим собственным значениям матрицы $\mathbf H^{(k)}(\mathbf w_k^*)$. Подпространство
+    \begin{equation}
+        \mathcal S_D = \operatorname{Im}(\mathbf U_D)
+    \end{equation}
+    называется \emph{подпространством наибольшей кривизны} размерности $D$.
+\end{definition}
+
+\begin{definition}
+    \label{def:squared-subspace-criterion}
+    \emph{Среднеквадратичным критерием сходимости в подпространстве наибольшей кривизны} размерности $D$ называется величина
+    \begin{equation}
+        \label{eq:squared-subspace-criterion}
+        \Delta_{2}^{(D)}(k+1)
+        =
+        \int
+        \big(
+            \mathcal L_{k+1}(\mathbf w) - \mathcal L_k(\mathbf w)
+        \big)^2
+        q(\mathbf w)\, d\mathbf w,
+    \end{equation}
+    где функция $q(\mathbf w)$ задает плотность вероятностного распределения на аффинном подпространстве $\mathbf w_k^* + \mathcal S_D$.
+\end{definition}
+
+\begin{remark}
+    \label{rem:squared-subspace-coordinates}
+    Любая точка $\mathbf w \in \mathbf w_k^* + \mathcal S_D$ единственным образом представима в виде
+    \begin{equation}
+        \mathbf w = \mathbf w_k^* + \mathbf U_D \mathbf z,
+        \qquad
+        \mathbf z \in \mathbb R^D.
+    \end{equation}
+    Поэтому критерий~\eqref{eq:squared-subspace-criterion} можно эквивалентно записать в координатах $\mathbf z \in \mathbb R^D$:
+    \begin{equation}
+        \label{eq:squared-subspace-criterion-z}
+        \Delta_{2}^{(D)}(k+1)
+        =
+        \int
+        \big(
+            \mathcal L_{k+1}(\mathbf w_k^* + \mathbf U_D \mathbf z)
+            -
+            \mathcal L_k(\mathbf w_k^* + \mathbf U_D \mathbf z)
+        \big)^2
+        \tilde q(\mathbf z)\, d\mathbf z,
+    \end{equation}
+    где $\tilde q(\mathbf z)$ "--- плотность распределения в координатах подпространства, индуцированная функцией предпочтения $q(\mathbf w)$.
+\end{remark}
+
+В дальнейшем рассмотрении полезно выразить критерий через компактные объекты в координатах подпространства. Соответствующее представление дается следующей леммой.
+
+\begin{lemma}
+    \label{lemma:squared-subspace-general-reduction}
+    Пусть $\operatorname{supp} q \subset (\mathbf w_k^* + \mathcal S_D)\cap \mathcal U_R(\mathbf w_k^*)$. Обозначим
+    \begin{equation}
+        a_k
+        =
+        \mathcal L_{k+1}(\mathbf w_k^*)
+        -
+        \mathcal L_k(\mathbf w_k^*),
+        \qquad
+        \mathbf b_k
+        =
+        \mathbf g^{(k+1)}(\mathbf w_k^*),
+    \end{equation}
+    \begin{equation}
+        \mathbf A_k
+        =
+        \mathbf H^{(k+1)}(\mathbf w_k^*)
+        -
+        \mathbf H^{(k)}(\mathbf w_k^*),
+        \qquad
+        \mathbf B_k
+        =
+        \mathbf U_D^\top \mathbf A_k \mathbf U_D \in \mathbb R^{D\times D},
+    \end{equation}
+    \begin{equation}
+        \mathbf c_k
+        =
+        \mathbf U_D^\top \mathbf b_k \in \mathbb R^D.
+    \end{equation}
+    Тогда в рамках квадратичной аппроксимации~\eqref{eq:losses-difference-second-order-minimum} критерий~\eqref{eq:squared-subspace-criterion-z} представим в виде
+    \begin{equation}
+        \label{eq:squared-subspace-general-reduction}
+        \Delta_{2}^{(D)}(k+1)
+        =
+        \int
+        \left(
+            a_k
+            +
+            \mathbf c_k^\top \mathbf z
+            +
+            \frac12 \mathbf z^\top \mathbf B_k \mathbf z
+        \right)^2
+        \tilde q(\mathbf z)\, d\mathbf z.
+    \end{equation}
+\end{lemma}
+
+\begin{proof}
+    Подставляя представление $\mathbf w = \mathbf w_k^* + \mathbf U_D \mathbf z$ в квадратичную аппроксимацию~\eqref{eq:losses-difference-second-order-minimum} и пользуясь ортонормированностью столбцов матрицы $\mathbf U_D$, получаем
+    \begin{equation}
+        \mathcal L_{k+1}(\mathbf w) - \mathcal L_k(\mathbf w)
+        =
+        a_k
+        +
+        (\mathbf U_D^\top \mathbf b_k)^\top \mathbf z
+        +
+        \frac12 \mathbf z^\top \mathbf U_D^\top \mathbf A_k \mathbf U_D \mathbf z
+        =
+        a_k + \mathbf c_k^\top \mathbf z + \frac12 \mathbf z^\top \mathbf B_k \mathbf z.
+    \end{equation}
+    Возведение в квадрат и усреднение по распределению $\tilde q(\mathbf z)$ дают~\eqref{eq:squared-subspace-general-reduction}.
+\end{proof}
+
+\begin{remark}
+    \label{rem:Bk-hessian-spectrum}
+    По построению столбцы матрицы $\mathbf U_D$ являются собственными векторами матрицы $\mathbf H^{(k)}(\mathbf w_k^*)$, поэтому $\mathbf U_D^\top \mathbf H^{(k)}(\mathbf w_k^*) \mathbf U_D = \operatorname{diag}(\lambda_1^{(k)}, \ldots, \lambda_D^{(k)})$. Если, кроме того, эти векторы являются также собственными векторами матрицы $\mathbf H^{(k+1)}(\mathbf w_k^*)$, то
+    \begin{equation}
+        \label{eq:Bk-diagonal-eig-diffs}
+        \mathbf B_k
+        =
+        \operatorname{diag}\left(
+            \lambda_1^{(k+1)}-\lambda_1^{(k)},
+            \ldots,
+            \lambda_D^{(k+1)}-\lambda_D^{(k)}
+        \right),
+    \end{equation}
+    т.\,е. собственные значения матрицы $\mathbf B_k$ совпадают с приращениями соответствующих собственных значений матриц Гессе.
+\end{remark}
+
+Условие совпадения главных собственных направлений при переходе от выборки размера $k$ к выборке размера $k+1$ выделим в отдельное предположение, при котором ниже получаются явные спектральные выражения.
+
+\begin{assumption}
+    \label{assumption:stable-principal-directions}
+    Векторы $\mathbf u_1, \ldots, \mathbf u_D$, отвечающие $D$ наибольшим собственным значениям матрицы $\mathbf H^{(k)}(\mathbf w_k^*)$, являются также собственными векторами матрицы $\mathbf H^{(k+1)}(\mathbf w_k^*)$:
+    \begin{equation}
+        \mathbf H^{(k+1)}(\mathbf w_k^*) \mathbf u_i
+        =
+        \lambda_i^{(k+1)} \mathbf u_i,
+        \qquad i=1, \ldots, D.
+    \end{equation}
+\end{assumption}
+
+Это предположение означает, что при добавлении одного объекта главные направления локальной кривизны в рассматриваемом подпространстве не меняются, и именно оно позволяет выразить критерий через приращения собственных значений матриц Гессе.
+
+\begin{remark}
+    В практически важном частном случае функция предпочтения $q(\mathbf w)$ выбирается так, чтобы индуцированное распределение в координатах подпространства было нормальным:
+    \begin{equation}
+        \tilde{q}(\mathbf z) = \mathcal N(\mathbf 0, \sigma^2 \mathbf I_D),
+        \qquad
+        \mathbf w = \mathbf w_k^* + \mathbf U_D \mathbf z.
+    \end{equation}
+    Этот выбор согласуется с гауссовским распределением, использованным в полнопространственном среднеквадратичном критерии~\eqref{eq:squared-criterion}, и позволяет получить явные оценки скорости убывания через моменты квадратичной формы.
+\end{remark}
+
+\begin{theorem}
+    \label{thm:squared-subspace-general}
+    Пусть выполнены условия леммы~\ref{lemma:squared-subspace-general-reduction}. Предположим, что
+    \begin{equation}
+        \|\mathbf g_{k+1}(\mathbf w_k^*)\|_2 \leqslant M_{\mathbf g}
+    \end{equation}
+    и для всех $i=1, \ldots, k+1$ выполнены оценки
+    \begin{equation}
+        |\ell_i(\mathbf w_k^*)| \leqslant M_\ell,
+        \qquad
+        \|\mathbf H_i(\mathbf w_k^*)\|_2 \leqslant M_{\mathbf H}.
+    \end{equation}
+    Пусть, кроме того, функция предпочтения $q(\mathbf w)$ индуцирует в координатах подпространства наибольшей кривизны распределение
+    \begin{equation}
+        \tilde q(\mathbf z)=\mathcal N(\mathbf 0,\sigma^2 \mathbf I_D).
+    \end{equation}
+    Тогда для среднеквадратичного критерия сходимости в подпространстве наибольшей кривизны верно
+    \begin{equation}
+        \label{eq:squared-subspace-general-theorem}
+        \Delta_2^{(D)}(k+1)
+        \leqslant
+        \frac{
+            12M_\ell^2
+            +
+            3\sigma^2 M_{\mathbf g}^2
+            +
+            3\sigma^4(D^2+2D)M_{\mathbf H}^2
+        }{(k+1)^2}
+        = \mathcal{O}(k^{-2}).
+    \end{equation}
+\end{theorem}
+
+\begin{proof}[Схема доказательства]
+    По лемме~\ref{lemma:squared-subspace-general-reduction} критерий $\Delta_2^{(D)}(k+1)$ есть математическое ожидание квадрата $(a_k+\mathbf c_k^\top \mathbf z+\tfrac12 \mathbf z^\top \mathbf B_k \mathbf z)^2$ по гауссовскому распределению $\mathbf z \sim \mathcal N(\mathbf 0,\sigma^2 \mathbf I_D)$. Применяя неравенство $(x+y+z)^2 \leqslant 3(x^2+y^2+z^2)$, получаем разложение на три слагаемых, оцениваемых по отдельности. Нулевой член ограничивается так же, как в теореме~\ref{thm:abs-onepoint-general}: $a_k^2 \leqslant 4M_\ell^2/(k+1)^2$. Для линейного члена из $\mathbf c_k=\mathbf U_D^\top \mathbf b_k$ и ортонормированности столбцов матрицы $\mathbf U_D$ имеем $\|\mathbf c_k\|_2 \leqslant \|\mathbf b_k\|_2 \leqslant M_{\mathbf g}/(k+1)$, откуда $\mathbb E[(\mathbf c_k^\top \mathbf z)^2]=\sigma^2 \|\mathbf c_k\|_2^2 \leqslant \sigma^2 M_{\mathbf g}^2/(k+1)^2$. Для квадратичного члена пользуемся формулой момента квадратичной формы гауссовского вектора и оценками следов:
+    \begin{equation}
+        \mathbb E\big[(\mathbf z^\top \mathbf B_k \mathbf z)^2\big]
+        =
+        2\sigma^4 \operatorname{Tr}(\mathbf B_k^2) + \sigma^4 \operatorname{Tr}(\mathbf B_k)^2
+        \leqslant \sigma^4(D^2+2D)\|\mathbf B_k\|_2^2,
+    \end{equation}
+    где использовано, что $\operatorname{Tr}(\mathbf B_k^2) \leqslant D\|\mathbf B_k\|_2^2$ и $|\operatorname{Tr}(\mathbf B_k)| \leqslant D\|\mathbf B_k\|_2$ для симметричной матрицы $\mathbf B_k \in \mathbb R^{D\times D}$. Поскольку $\|\mathbf B_k\|_2 \leqslant \|\mathbf A_k\|_2 \leqslant 2M_{\mathbf H}/(k+1)$, получаем $\mathbb E[(\mathbf z^\top \mathbf B_k \mathbf z)^2] \leqslant 4\sigma^4(D^2+2D)M_{\mathbf H}^2/(k+1)^2$. Сложение трех оценок дает~\eqref{eq:squared-subspace-general-theorem}. Полное доказательство приведено в приложении~\ref{app:proof-subspace}.
+\end{proof}
+
+В отличие от полнопространственной оценки~\eqref{eq:squared-criterion-general-theorem}, в правой части~\eqref{eq:squared-subspace-general-theorem} размерностный множитель при квадратичном члене зависит уже не от полной размерности пространства параметров $N$, а только от размерности выбранного подпространства $D$. Тем самым ограничение пробной области на подпространство наибольшей кривизны сохраняет порядок сходимости $\mathcal O(k^{-2})$, заменяя зависимость от $N$ на зависимость от $D$. Это и есть центральный теоретический результат настоящей главы.
+
+В частном случае, когда нулевой и линейный члены в~\eqref{eq:squared-subspace-general-reduction} обращаются в нуль (что естественно для строгого минимума и для функций потерь, обнуляющихся в нем), критерий допускает явное выражение через приращения ведущих собственных значений матриц Гессе.
+
+\begin{theorem}
+    \label{thm:squared-subspace-hessian-eigs}
+    Пусть выполнены условия леммы~\ref{lemma:squared-subspace-general-reduction} и предположение~\ref{assumption:stable-principal-directions}, и пусть $a_k = 0$ и $\mathbf c_k = \mathbf 0$. Пусть, кроме того, $\tilde q(\mathbf z)=\mathcal N(\mathbf 0,\sigma^2\mathbf I_D)$. Тогда
+    \begin{equation}
+        \label{eq:squared-subspace-hessian-eigs-theorem}
+        \Delta_{2}^{(D)}(k+1)
+        =
+        \frac{\sigma^4}{4}
+        \left(
+            2\sum_{i=1}^{D}
+            \left(
+                \lambda_i^{(k+1)}-\lambda_i^{(k)}
+            \right)^2
+            +
+            \left(
+                \sum_{i=1}^{D}
+                \left(
+                    \lambda_i^{(k+1)}-\lambda_i^{(k)}
+                \right)
+            \right)^2
+        \right).
+    \end{equation}
+\end{theorem}
+
+\begin{proof}
+    По лемме~\ref{lemma:squared-subspace-general-reduction} при $a_k=0$ и $\mathbf c_k=\mathbf 0$
+    \begin{equation}
+        \Delta_{2}^{(D)}(k+1) = \tfrac14 \mathbb E_{\tilde q(\mathbf z)} \big[ (\mathbf z^\top \mathbf B_k \mathbf z)^2 \big].
+    \end{equation}
+    Применяя формулу $\mathbb E[(\mathbf z^\top \mathbf B_k \mathbf z)^2] = 2\sigma^4 \operatorname{Tr}(\mathbf B_k^2) + \sigma^4 \operatorname{Tr}(\mathbf B_k)^2$ и используя представление~\eqref{eq:Bk-diagonal-eig-diffs} матрицы $\mathbf B_k$ в диагональном виде, согласно замечанию~\ref{rem:Bk-hessian-spectrum} и предположению~\ref{assumption:stable-principal-directions}, получаем $\operatorname{Tr}(\mathbf B_k) = \sum_{i=1}^{D} (\lambda_i^{(k+1)}-\lambda_i^{(k)})$ и $\operatorname{Tr}(\mathbf B_k^2) = \sum_{i=1}^{D} (\lambda_i^{(k+1)}-\lambda_i^{(k)})^2$. Подстановка дает~\eqref{eq:squared-subspace-hessian-eigs-theorem}.
+\end{proof}
+
+Помимо явного спектрального представления, при дополнительных условиях подпространство ведущих собственных векторов оказывается оптимальным выбором среди всех подпространств той же размерности, согласованных с собственным базисом матриц Гессе. Сформулируем соответствующее утверждение.
+
+\begin{proposition}
+    \label{prop:extremal-topD}
+    Пусть выполнено $a_k=0$, $\mathbf c_k=\mathbf 0$, матрицы $\mathbf H^{(k)}(\mathbf w_k^*)$ и $\mathbf H^{(k+1)}(\mathbf w_k^*)$ одновременно диагонализуемы в общем ортонормированном базисе $\{\mathbf u_i\}_{i=1}^N$, и пусть приращения собственных значений
+    \begin{equation}
+        \delta_i = \lambda_i^{(k+1)} - \lambda_i^{(k)},
+        \qquad i=1, \ldots, N,
+    \end{equation}
+    удовлетворяют $\delta_1 \geqslant \delta_2 \geqslant \cdots \geqslant \delta_N \geqslant 0$. Для произвольного набора индексов $I\subset \{1, \ldots, N\}$ мощности $|I|=D$ обозначим через $\mathcal S_I = \operatorname{span}\{\mathbf u_i: i\in I\}$ соответствующее $D$-мерное собственное подпространство и через $\Delta_{2,I}(k+1)$ "--- среднеквадратичный критерий сходимости, построенный по этому подпространству, с $\tilde q(\mathbf z)=\mathcal N(\mathbf 0,\sigma^2 \mathbf I_D)$. Тогда
+    \begin{equation}
+        \label{eq:extremal-criterion}
+        \Delta_{2,I}(k+1)
+        =
+        \frac{\sigma^4}{4}
+        \left(
+            2\sum_{i\in I}\delta_i^2
+            +
+            \left(\sum_{i\in I}\delta_i\right)^2
+        \right),
+    \end{equation}
+    и максимум этого выражения по всем наборам $I$ с $|I|=D$ достигается на $I^* = \{1, \ldots, D\}$.
+\end{proposition}
+
+\begin{proof}
+    В силу одновременной диагонализуемости при ограничении на подпространство $\mathcal S_I$ матрица $\mathbf B_k$ принимает диагональный вид $\mathbf B_{k,I} = \operatorname{diag}(\delta_i: i\in I)$. Применяя теорему~\ref{thm:squared-subspace-hessian-eigs} к выборке индексов $I$, получаем~\eqref{eq:extremal-criterion}. Функция
+    \begin{equation}
+        f(I) = 2\sum_{i\in I}\delta_i^2 + \left(\sum_{i\in I}\delta_i\right)^2
+    \end{equation}
+    монотонно возрастает по каждому из неотрицательных $\delta_i$, поэтому максимизация по наборам мощности $D$ достигается выбором $D$ наибольших значений $\delta_i$, т.\,е. $I^* = \{1, \ldots, D\}$.
+\end{proof}
+
+Полученные результаты показывают, что переход от полнопространственного среднеквадратичного критерия~$\Delta_2$ к подпространственному~$\Delta_2^{(D)}$ сохраняет порядок сходимости $\mathcal O(k^{-2})$, замещая зависимость от полной размерности~$N$ на зависимость от размерности подпространства~$D$. При выполнении предположения о стабильности главных собственных направлений критерий допускает замкнутое спектральное выражение через приращения ведущих собственных значений матриц Гессе, а выбор подпространства, натянутого на ведущие собственные векторы, является экстремальным в семействе равноразмерных собственных подпространств. Вычислительные аспекты построения такого подпространства и оценки самого критерия в моделях большой размерности обсуждаются в разделе~\ref{subsec:algorithms}.
+
+\subsection{Архитектурно-зависимая оценка спектральной нормы матрицы Гессе}\label{subsec:hessian-bound}
+
+Все полученные выше оценки скорости убывания критериев сходимости~\eqref{eq:abs-onepoint-general-theorem},~\eqref{eq:squared-criterion-general-theorem} и~\eqref{eq:squared-subspace-general-theorem} содержат константу $M_{\mathbf H}$, ограничивающую спектральную норму пообъектной матрицы Гессе $\mathbf H_i(\mathbf w_k^*)$. Без явного контроля этой константы оценки остаются формально верными, но не позволяют сравнивать модели разной архитектуры. В настоящем разделе константа $M_{\mathbf H}$ выражается через архитектурные параметры модели для случая полносвязной нейронной сети.
+
+Воспользуемся стандартным разложением Гаусса"--~Ньютона матрицы Гессе на отдельном объекте $(\mathbf x_i, \mathbf y_i)$:
+\begin{equation}
+    \label{eq:gauss-newton-decomposition}
+    \mathbf H_i(\mathbf w) = \mathbf G_i(\mathbf w) + \mathbf R_i(\mathbf w),
+\end{equation}
+где $\mathbf G_i(\mathbf w)$ "--- гаусс"--~ньютоновская компонента, определяемая якобианом выхода модели и кривизной функции потерь по выходу, а $\mathbf R_i(\mathbf w)$ "--- остаточный член, связанный со вторыми производными параметризации. Известно, что в окрестности точки минимума спектрально значимая часть матрицы Гессе нейронной сети сосредоточена в гаусс"--~ньютоновской компоненте, тогда как остаточный член вносит вклад преимущественно в область малых собственных значений и ослабевает по мере уменьшения градиента функции потерь по выходу модели~\cite{sagun2017hessian,ghorbani2019investigation,papyan2020traces}. Поэтому для контроля константы $M_{\mathbf H}$ достаточно ограничить спектральную норму $\|\mathbf G_i(\mathbf w)\|_2$.
+
+Для полносвязных нейронных сетей соответствующая оценка получена в работах автора~\cite{kiselev2025ssdlb,meshkov2024convnets} и приводится здесь без доказательства.
+
+\begin{proposition}
+    \label{prop:fcnn-G-bound}
+    Пусть $f_{\mathbf{w}}$ является $L$-слойной полносвязной нейронной сетью без смещений, и пусть для входов сети и параметров каждого слоя $p=1, \ldots, L$ выполнены ограничения $\|\mathbf{x}\|_2 \leqslant M_{\mathbf{x}}$, $\|\mathbf{A}(\mathbf{w})\|_2 \leqslant M_{\mathbf{A}}$, $\|\mathbf{W}^{(p)}\|_2 \leqslant M_{\mathbf{W}}$, $\|\mathbf{D}^{(p)}\|_2 \leqslant M_{\sigma}$, где $\mathbf{A}(\mathbf{w})$ "--- матрица вторых производных функции потерь по выходу модели, $\mathbf{W}^{(p)}$ "--- весовая матрица $p$-го слоя, $\mathbf{D}^{(p)}$ "--- диагональная матрица производных активаций. Тогда спектральная норма гаусс"--~ньютоновской компоненты матрицы Гессе на отдельном объекте удовлетворяет оценке
+    \begin{equation}
+        \label{eq:fcnn-G-bound}
+        \|\mathbf{G}_i(\mathbf{w})\|_2
+        \leqslant
+        L M_{\mathbf{x}}^2 M_{\mathbf{A}} \left(M_{\mathbf{W}} M_{\sigma}\right)^{2L-2}.
+    \end{equation}
+\end{proposition}
+
+Утверждение~\ref{prop:fcnn-G-bound} показывает, что в полносвязной архитектуре спектральная норма гаусс"--~ньютоновской компоненты растет линейно по числу слоев $L$ и экспоненциально по глубине через произведение $M_{\mathbf W} M_\sigma$. Следовательно, в условиях, в которых оправдано приближение $\|\mathbf H_i(\mathbf w_k^*)\|_2 \approx \|\mathbf G_i(\mathbf w_k^*)\|_2$, константа $M_{\mathbf H}$ в полученных в разделах~\ref{subsec:abs-onepoint}--\ref{subsec:subspace} оценках допускает явное архитектурно-зависимое ограничение
+\begin{equation}
+    \label{eq:MH-architectural}
+    M_{\mathbf H} \leqslant L M_{\mathbf x}^2 M_{\mathbf A} \left(M_{\mathbf W} M_\sigma\right)^{2L-2}.
+\end{equation}
+
+Подстановка~\eqref{eq:MH-architectural} в~\eqref{eq:squared-subspace-general-theorem} дает явную верхнюю оценку среднеквадратичного критерия в подпространстве наибольшей кривизны через архитектурные параметры модели (число слоев, оценки норм весовых матриц и липшицевы константы активаций) и параметры пробного распределения. Это позволяет переходить от заведомо выполнимого, но абстрактного утверждения о порядке убывания критерия $\mathcal O(k^{-2})$ к количественной оценке доминирующей константы, пригодной для сравнения моделей разной архитектуры и для построения количественного критерия достаточности обучающей выборки на основе допустимого уровня стабилизации поверхности функции потерь.
+
+\subsection{Алгоритмы оценивания критериев в моделях большой размерности}\label{subsec:algorithms}
+
+В моделях большой размерности прямое построение матрицы Гессе $\mathbf H^{(k)}(\mathbf w_k^*)$ невозможно из"=за квадратичной по числу параметров памяти. Поэтому для практического вычисления критериев $\Delta_2$ и $\Delta_2^{(D)}$ нужны алгоритмы, опирающиеся не на саму матрицу Гессе, а на ее произведения на вектор. Лемма~\ref{lemma:squared-subspace-general-reduction} показывает, что в подпространственной постановке критерий полностью определяется тремя сжатыми объектами: скаляром $a_k$, вектором $\mathbf c_k \in \mathbb R^D$ и матрицей $\mathbf B_k \in \mathbb R^{D\times D}$. Это приводит к естественной иерархии алгоритмов с разным балансом между точностью и затратами на вычисление.
+
+Введем обозначения для вычислительной сложности. Пусть $C_{\mathrm{fwd}}(m)$ "--- стоимость одной прямой оценки $\mathcal L_m(\mathbf w)$, $C_{\mathrm{bwd}}(m)$ "--- стоимость одного обратного прохода, а $C_{\mathrm{HVP}}(m)$ "--- стоимость одного произведения матрицы $\mathbf H^{(m)}(\mathbf w)$ на вектор. Обозначим через $S$ число точек Монте-Карло, через $D$ "--- размерность подпространства, а через $T_{\mathrm{eig}}$ "--- число итераций итерационного спектрального метода.
+
+\textbf{Построение подпространства наибольшей кривизны.} Для всех описанных ниже подпространственных алгоритмов первым шагом является вычисление верхних $D$ собственных векторов матрицы $\mathbf H^{(k)}(\mathbf w_k^*)$. Для этого применяется метод дефлированной степенной итерации на произведениях матрицы Гессе на вектор, реализуемых посредством стандартного приема Пирлмуттера~\cite{pearlmutter1994fast}; вместо степенной итерации применимы и другие HVP-итерационные спектральные методы (Ланцоша, LOBPCG)~\cite{yao2020pyhessian}. При условии, что на каждую итерацию приходится $\mathcal O(D)$ произведений матрицы на вектор, разовая стоимость построения подпространства составляет
+\begin{equation}
+    \mathcal O\bigl(T_{\mathrm{eig}} \cdot D \cdot C_{\mathrm{HVP}}(k)\bigr).
+\end{equation}
+Полученная матрица $\mathbf U_D \in \mathbb R^{N\times D}$ далее используется всеми тремя описанными ниже алгоритмами.
+
+\textbf{Алгоритм 1: прямая оценка критерия методом Монте-Карло.} Наиболее точная оценка получается прямой подстановкой выборки точек $\mathbf z_s \sim \mathcal N(\mathbf 0, \sigma^2 \mathbf I_D)$, $s = 1, \ldots, S$, в определение критерия~\eqref{eq:squared-subspace-criterion-z}:
+\begin{equation}
+    \label{eq:direct-subspace-mc}
+    \widehat \Delta_{2,\,\mathrm{dir}}^{(D)}(k+1)
+    =
+    \frac{1}{S}\sum_{s=1}^{S}
+    \big(
+        \mathcal L_{k+1}(\mathbf w_k^* + \mathbf U_D \mathbf z_s)
+        -
+        \mathcal L_k(\mathbf w_k^* + \mathbf U_D \mathbf z_s)
+    \big)^2.
+\end{equation}
+Эта оценка целится непосредственно в истинное значение критерия $\Delta_2^{(D)}(k+1)$ и не опирается на квадратичную аппроксимацию~\eqref{eq:losses-difference-second-order-minimum}. Стоимость ее вычисления после построения подпространства составляет $\mathcal O\bigl(S(ND + C_{\mathrm{fwd}}(k)+C_{\mathrm{fwd}}(k+1))\bigr)$, причем в моделях большой размерности доминируют две прямые оценки $\mathcal L_k$ и $\mathcal L_{k+1}$ на каждой точке.
+
+\textbf{Алгоритм 2: оценка квадратичного суррогата методом Монте-Карло.} В рамках квадратичной аппроксимации, согласно лемме~\ref{lemma:squared-subspace-general-reduction}, приращение $\mathcal L_{k+1}-\mathcal L_k$ в подпространстве заменяется квадратичной функцией $a_k+\mathbf c_k^\top \mathbf z + \tfrac12 \mathbf z^\top \mathbf B_k \mathbf z$. Подстановка этой функции в~\eqref{eq:direct-subspace-mc} дает оценку
+\begin{equation}
+    \label{eq:quad-subspace-mc}
+    \widehat \Delta_{2,\,\mathrm{quad}}^{(D)}(k+1)
+    =
+    \frac{1}{S}\sum_{s=1}^{S}
+    \left(
+        a_k + \mathbf c_k^\top \mathbf z_s + \frac12 \mathbf z_s^\top \mathbf B_k \mathbf z_s
+    \right)^2.
+\end{equation}
+Для ее применения требуется однократное вычисление коэффициентов $a_k$, $\mathbf c_k$ и $\mathbf B_k$ со стоимостью
+\begin{equation}
+    \label{eq:proxy-setup-cost}
+    \mathcal O\Bigl(
+        C_{\mathrm{fwd}}(k)+C_{\mathrm{fwd}}(k+1)
+        + C_{\mathrm{bwd}}(k+1)
+        + D\bigl(C_{\mathrm{HVP}}(k)+C_{\mathrm{HVP}}(k+1)\bigr)
+        + ND^2
+    \Bigr),
+\end{equation}
+после чего стоимость собственно оценки составляет $\mathcal O(SD^2)$. По сравнению с прямой Монте-Карло оценкой~\eqref{eq:direct-subspace-mc} требуется на $2S$ меньше прямых проходов модели, поэтому при $D\ll N$ выигрыш существенен.
+
+\textbf{Алгоритм 3: замкнутая форма через моменты квадратичной формы.} Поскольку квадратичный суррогат является многочленом второй степени по $\mathbf z$, а распределение $\tilde q(\mathbf z)=\mathcal N(\mathbf 0,\sigma^2 \mathbf I_D)$ "--- гауссовское, математическое ожидание в~\eqref{eq:quad-subspace-mc} вычисляется в замкнутой форме. Используя стандартные формулы для моментов квадратичной формы гауссовского вектора (с учетом $\mathbb E[\mathbf z]=\mathbf 0$, $\mathbb E[\mathbf z\mathbf z^\top]=\sigma^2 \mathbf I_D$, $\mathbb E[(\mathbf z^\top \mathbf B_k \mathbf z)^2]=2\sigma^4 \operatorname{Tr}(\mathbf B_k^2)+\sigma^4 \operatorname{Tr}(\mathbf B_k)^2$ и $\mathbb E[\mathbf z^\top \mathbf B_k \mathbf z]=\sigma^2 \operatorname{Tr}(\mathbf B_k)$), получаем
+\begin{equation}
+    \label{eq:quad-closed-form-expanded}
+    \widehat \Delta_{2,\,\mathrm{GM}}^{(D)}(k+1)
+    =
+    a_k^2
+    +
+    a_k \sigma^2 \operatorname{Tr}(\mathbf B_k)
+    +
+    \sigma^2 \|\mathbf c_k\|_2^2
+    +
+    \frac{\sigma^4}{4}
+    \left(
+        2\operatorname{Tr}(\mathbf B_k^2)
+        +
+        \operatorname{Tr}(\mathbf B_k)^2
+    \right).
+\end{equation}
+После однократного вычисления коэффициентов со стоимостью~\eqref{eq:proxy-setup-cost} оценка~\eqref{eq:quad-closed-form-expanded} вычисляется за $\mathcal O(D^2)$ и не требует выборки точек Монте-Карло.
+
+\textbf{Сравнение алгоритмов.} Три предложенных алгоритма различаются положением на спектре <<точность"=затраты>>. Прямая Монте-Карло оценка~\eqref{eq:direct-subspace-mc} дает несмещенную оценку истинного критерия $\Delta_2^{(D)}$ и не опирается на квадратичную аппроксимацию, но требует $S$ прямых вычислений функции потерь на полной выборке. Квадратичная Монте-Карло оценка~\eqref{eq:quad-subspace-mc} и оценка~\eqref{eq:quad-closed-form-expanded} замкнутой формы целят в квадратичный суррогат критерия, а не в сам критерий, но позволяют вычислить его за $\mathcal O(SD^2)$ и $\mathcal O(D^2)$ соответственно после однократной настройки коэффициентов. Сводка приведена в таблице~\ref{tab:estimator-summary}.
+
+\begin{table}[ht]
+    \centering
+    \caption{Сравнение трех алгоритмов оценивания подпространственного критерия $\Delta_2^{(D)}$. Все алгоритмы используют один и тот же шаг построения подпространства наибольшей кривизны со стоимостью $\mathcal O(T_{\mathrm{eig}}\,D\,C_{\mathrm{HVP}}(k))$}
+    \label{tab:estimator-summary}
+    \begin{tabular}{@{}p{3.5cm} p{3.0cm} p{2.5cm} p{4.5cm}@{}}
+        \toprule
+        Алгоритм & Объект оценки & Однократная настройка & Стоимость собственно оценки \\
+        \midrule
+        Прямая Монте-Карло~\eqref{eq:direct-subspace-mc}
+        & истинный $\Delta_2^{(D)}$
+        & "---
+        & $\mathcal O\bigl(S(ND+C_{\mathrm{fwd}}(k)+C_{\mathrm{fwd}}(k+1))\bigr)$ \\[0.4em]
+        Квадратичная Монте-Карло~\eqref{eq:quad-subspace-mc}
+        & квадратичный суррогат
+        & \eqref{eq:proxy-setup-cost}
+        & $\mathcal O(SD^2)$ \\[0.4em]
+        Замкнутая форма~\eqref{eq:quad-closed-form-expanded}
+        & квадратичный суррогат
+        & \eqref{eq:proxy-setup-cost}
+        & $\mathcal O(D^2)$ \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+Расхождение между прямой Монте-Карло оценкой и оценками квадратичного суррогата характеризует, насколько хорошо квадратичная аппроксимация описывает реальное приращение функции потерь в окрестности минимума. Это расхождение само по себе является диагностической величиной: при малом расхождении оценка~\eqref{eq:quad-closed-form-expanded} замкнутой формы становится не только корректной, но и наиболее экономичной из трех алгоритмов.
+
+\subsection{Выводы по главе}\label{subsec:chapter3-conclusions}
+
+В данной главе на основе общего критерия $p$-сходимости~\eqref{eq:general-p-criterion}, введенного в главе~\ref{sec2}, изучены три частных случая, допускающих явные теоретические оценки скорости убывания при увеличении объема обучающей выборки.
+
+\begin{enumerate}
+    \item Для абсолютного одноточечного критерия $\Delta_1$ доказана оценка $\mathcal O(k^{-1})$ при пообъектной ограниченности функции потерь, градиента и матрицы Гессе (теорема~\ref{thm:abs-onepoint-general}).
+    \item Для среднеквадратичного критерия $\Delta_2$ в полном пространстве параметров с гауссовским распределением точек получена оценка $\mathcal O(k^{-2})$ с явной зависимостью доминирующей константы от размерности пространства параметров $N$ через множитель $N^2+2N$ при квадратичном члене (теорема~\ref{thm:squared-criterion-general}).
+    \item Для среднеквадратичного критерия $\Delta_2^{(D)}$, ограниченного на $D$-мерное подпространство ведущих собственных векторов матрицы Гессе, получена оценка $\mathcal O(k^{-2})$ с зависимостью от размерности подпространства $D$ вместо $N$ (теорема~\ref{thm:squared-subspace-general}). При выполнении предположения о стабильности главных собственных направлений критерий допускает замкнутое спектральное выражение через приращения ведущих собственных значений матриц Гессе (теорема~\ref{thm:squared-subspace-hessian-eigs}), а подпространство ведущих собственных векторов является экстремальным в семействе равноразмерных собственных подпространств (утверждение~\ref{prop:extremal-topD}).
+    \item Константа $M_{\mathbf H}$, входящая в полученные оценки, при стандартных архитектурных ограничениях допускает явное верхнее ограничение через число слоев, нормы весовых матриц и липшицевы константы активаций (утверждение~\ref{prop:fcnn-G-bound}).
+    \item Для практического вычисления критериев в моделях большой размерности предложены три алгоритма (прямая Монте-Карло, квадратичная Монте-Карло и замкнутая форма через моменты квадратичной формы), различающиеся положением на спектре <<точность"=затраты>>; разовый шаг построения подпространства наибольшей кривизны выполняется через произведения матрицы Гессе на вектор без явного построения самой матрицы Гессе.
+\end{enumerate}
+
+Полученные оценки скорости убывания критериев позволяют сформулировать количественный критерий достаточности обучающей выборки: для заданного уровня стабилизации $\varepsilon > 0$ достаточный размер выборки $k^*(\varepsilon)$, обеспечивающий $\Delta_2^{(D)}(k+1) \leqslant \varepsilon$, удовлетворяет
+\begin{equation}
+    \label{eq:sufficient-sample-size}
+    k^*(\varepsilon)
+    \leqslant
+    \sqrt{\frac{12 M_\ell^2 + 3\sigma^2 M_{\mathbf g}^2 + 3\sigma^4(D^2+2D)M_{\mathbf H}^2}{\varepsilon}} - 1,
+\end{equation}
+что и составляет содержательное приложение полученных теоретических результатов к задаче определения достаточного размера обучающей выборки. Эмпирическая проверка полученных оценок проводится в главе~\ref{sec4}.

@@ -1,6 +1,247 @@
 \cleardoublepage
 \phantomsection
 \addcontentsline{toc}{section}{Приложение}
-\section*{Приложение}\label{append}
+\section*{Приложение. Полные доказательства}\label{append}
 
-TODO
+В настоящем приложении приведены полные доказательства теорем~\ref{thm:squared-criterion-general} и~\ref{thm:squared-subspace-general}, схемы которых даны в основном тексте (главы~\ref{sec3}, разделы~\ref{subsec:squared} и~\ref{subsec:subspace}).
+
+\subsection*{Полное доказательство теоремы~\ref{thm:squared-criterion-general}}\label{app:proof-squared}
+
+Обозначим
+\begin{equation}
+    \mathbf v = \mathbf w-\mathbf w_k^*,
+    \qquad
+    a_k = \mathcal L_{k+1}(\mathbf w_k^*)-\mathcal L_k(\mathbf w_k^*),
+    \qquad
+    \mathbf b_k = \mathbf g^{(k+1)}(\mathbf w_k^*),
+\end{equation}
+\begin{equation}
+    \mathbf A_k = \mathbf H^{(k+1)}(\mathbf w_k^*) - \mathbf H^{(k)}(\mathbf w_k^*).
+\end{equation}
+При $\mathbf w \sim \mathcal N(\mathbf w_k^*, \sigma^2 \mathbf I_N)$ имеем $\mathbf v \sim \mathcal N(\mathbf 0, \sigma^2 \mathbf I_N)$, и из квадратичной аппроксимации~\eqref{eq:losses-difference-second-order-minimum} следует
+\begin{equation}
+    \label{eq:app-squared-step1}
+    \mathcal L_{k+1}(\mathbf w)-\mathcal L_k(\mathbf w)
+    =
+    a_k+\mathbf b_k^\top \mathbf v+\frac12 \mathbf v^\top \mathbf A_k \mathbf v.
+\end{equation}
+Следовательно,
+\begin{equation}
+    \label{eq:app-squared-step2}
+    \Delta_2(k+1)
+    =
+    \mathbb E
+    \left[
+        \left(
+            a_k+\mathbf b_k^\top \mathbf v+\frac12 \mathbf v^\top \mathbf A_k \mathbf v
+        \right)^2
+    \right].
+\end{equation}
+
+Применяя неравенство $(x+y+z)^2 \leqslant 3(x^2+y^2+z^2)$, $x,y,z \in \mathbb R$, получаем
+\begin{equation}
+    \label{eq:app-squared-step3}
+    \Delta_2(k+1)
+    \leqslant
+    3a_k^2
+    +
+    3\mathbb E\big[(\mathbf b_k^\top \mathbf v)^2\big]
+    +
+    \frac{3}{4}\mathbb E\big[(\mathbf v^\top \mathbf A_k \mathbf v)^2\big].
+\end{equation}
+
+\textbf{Нулевой член.} По формуле для разности эмпирических функций потерь в точке $\mathbf w_k^*$
+\begin{equation}
+    a_k = \frac{1}{k+1} \Big( \ell_{k+1}(\mathbf w_k^*)-\mathcal L_k(\mathbf w_k^*) \Big),
+\end{equation}
+поэтому
+\begin{equation}
+    |a_k| \leqslant \frac{1}{k+1} \big( |\ell_{k+1}(\mathbf w_k^*)| + |\mathcal L_k(\mathbf w_k^*)| \big).
+\end{equation}
+Из условия $|\ell_i(\mathbf w_k^*)| \leqslant M_\ell$ и неравенства треугольника
+\begin{equation}
+    |\mathcal L_k(\mathbf w_k^*)|
+    =
+    \left| \frac{1}{k}\sum_{i=1}^k \ell_i(\mathbf w_k^*) \right|
+    \leqslant
+    \frac{1}{k}\sum_{i=1}^k |\ell_i(\mathbf w_k^*)|
+    \leqslant
+    M_\ell,
+\end{equation}
+откуда
+\begin{equation}
+    \label{eq:app-squared-zeroth}
+    |a_k| \leqslant \frac{2M_\ell}{k+1},
+    \qquad
+    a_k^2 \leqslant \frac{4M_\ell^2}{(k+1)^2}.
+\end{equation}
+
+\textbf{Линейный член.} Поскольку $\mathbf g^{(k)}(\mathbf w_k^*)=\mathbf 0$, имеем
+\begin{equation}
+    \mathbf b_k = \mathbf g^{(k+1)}(\mathbf w_k^*) = \frac{1}{k+1}\mathbf g_{k+1}(\mathbf w_k^*),
+\end{equation}
+откуда $\|\mathbf b_k\|_2 \leqslant M_{\mathbf g}/(k+1)$. Для второго момента линейной формы гауссовского вектора
+\begin{equation}
+    \label{eq:app-squared-linear}
+    \mathbb E\big[(\mathbf b_k^\top \mathbf v)^2\big]
+    =
+    \mathbf b_k^\top \mathbb E[\mathbf v\mathbf v^\top]\mathbf b_k
+    =
+    \sigma^2 \|\mathbf b_k\|_2^2
+    \leqslant
+    \frac{\sigma^2 M_{\mathbf g}^2}{(k+1)^2}.
+\end{equation}
+
+\textbf{Квадратичный член.} Поскольку $\mathbf A_k$ симметрична, а $\mathbf v \sim \mathcal N(\mathbf 0, \sigma^2 \mathbf I_N)$, по формуле момента квадратичной формы гауссовского вектора
+\begin{equation}
+    \mathbb E\big[(\mathbf v^\top \mathbf A_k \mathbf v)^2\big]
+    =
+    2\sigma^4 \operatorname{Tr}(\mathbf A_k^2)
+    +
+    \sigma^4 \operatorname{Tr}(\mathbf A_k)^2.
+\end{equation}
+Для симметричной матрицы $\mathbf A_k$ с собственными значениями $\lambda_1, \ldots, \lambda_N$
+\begin{equation}
+    \operatorname{Tr}(\mathbf A_k^2) = \sum_{i=1}^N \lambda_i^2 \leqslant N\|\mathbf A_k\|_2^2,
+    \qquad
+    |\operatorname{Tr}(\mathbf A_k)| \leqslant N\|\mathbf A_k\|_2,
+\end{equation}
+поэтому
+\begin{equation}
+    \label{eq:app-squared-quad-trace}
+    \mathbb E\big[(\mathbf v^\top \mathbf A_k \mathbf v)^2\big]
+    \leqslant
+    \sigma^4 (N^2+2N)\|\mathbf A_k\|_2^2.
+\end{equation}
+
+Для разности матриц Гессе справедливо представление
+\begin{equation}
+    \mathbf A_k = \frac{1}{k+1}\left( \mathbf H_{k+1}(\mathbf w_k^*) - \mathbf H^{(k)}(\mathbf w_k^*) \right),
+\end{equation}
+откуда с учетом $\|\mathbf H_{k+1}(\mathbf w_k^*)\|_2 \leqslant M_{\mathbf H}$ и оценки $\|\mathbf H^{(k)}(\mathbf w_k^*)\|_2 \leqslant M_{\mathbf H}$, получаемой аналогично оценке для $|\mathcal L_k(\mathbf w_k^*)|$,
+\begin{equation}
+    \label{eq:app-squared-Ak-norm}
+    \|\mathbf A_k\|_2 \leqslant \frac{2M_{\mathbf H}}{k+1}.
+\end{equation}
+Подставляя~\eqref{eq:app-squared-Ak-norm} в~\eqref{eq:app-squared-quad-trace}, получаем
+\begin{equation}
+    \label{eq:app-squared-quadratic}
+    \mathbb E\big[(\mathbf v^\top \mathbf A_k \mathbf v)^2\big]
+    \leqslant
+    \frac{4\sigma^4 (N^2+2N)M_{\mathbf H}^2}{(k+1)^2}.
+\end{equation}
+
+Собирая оценки~\eqref{eq:app-squared-zeroth},~\eqref{eq:app-squared-linear} и~\eqref{eq:app-squared-quadratic} и подставляя их в~\eqref{eq:app-squared-step3}, имеем
+\begin{equation}
+    \Delta_2(k+1)
+    \leqslant
+    \frac{
+        12M_\ell^2
+        +
+        3\sigma^2 M_{\mathbf g}^2
+        +
+        3\sigma^4 (N^2+2N)M_{\mathbf H}^2
+    }{(k+1)^2},
+\end{equation}
+что и требовалось доказать. \hfill$\square$
+
+\subsection*{Полное доказательство теоремы~\ref{thm:squared-subspace-general}}\label{app:proof-subspace}
+
+По лемме~\ref{lemma:squared-subspace-general-reduction}
+\begin{equation}
+    \Delta_2^{(D)}(k+1)
+    =
+    \mathbb E_{\tilde q(\mathbf z)}
+    \left[
+        \left(
+            a_k+\mathbf c_k^\top \mathbf z+\frac12 \mathbf z^\top \mathbf B_k \mathbf z
+        \right)^2
+    \right],
+    \qquad
+    \mathbf z \sim \mathcal N(\mathbf 0,\sigma^2\mathbf I_D),
+\end{equation}
+где $a_k$, $\mathbf c_k$, $\mathbf B_k$ определены в условии леммы. Применяя неравенство $(x+y+z)^2 \leqslant 3(x^2+y^2+z^2)$, получаем
+\begin{equation}
+    \label{eq:app-subspace-step1}
+    \Delta_2^{(D)}(k+1)
+    \leqslant
+    3a_k^2
+    +
+    3\mathbb E\big[(\mathbf c_k^\top \mathbf z)^2\big]
+    +
+    \frac34 \mathbb E\big[(\mathbf z^\top \mathbf B_k \mathbf z)^2\big].
+\end{equation}
+
+\textbf{Нулевой член.} Оценка идентична доказательству теоремы~\ref{thm:squared-criterion-general}: $a_k^2 \leqslant 4M_\ell^2/(k+1)^2$.
+
+\textbf{Линейный член.} Из определений $\mathbf c_k = \mathbf U_D^\top \mathbf b_k$ и $\mathbf b_k = \mathbf g_{k+1}(\mathbf w_k^*)/(k+1)$, с учетом ортонормированности столбцов матрицы $\mathbf U_D$ ($\|\mathbf U_D^\top\|_2 = 1$),
+\begin{equation}
+    \|\mathbf c_k\|_2
+    \leqslant
+    \|\mathbf U_D^\top\|_2 \|\mathbf b_k\|_2
+    \leqslant
+    \frac{M_{\mathbf g}}{k+1},
+\end{equation}
+откуда
+\begin{equation}
+    \label{eq:app-subspace-linear}
+    \mathbb E\big[(\mathbf c_k^\top \mathbf z)^2\big]
+    =
+    \sigma^2 \|\mathbf c_k\|_2^2
+    \leqslant
+    \frac{\sigma^2 M_{\mathbf g}^2}{(k+1)^2}.
+\end{equation}
+
+\textbf{Квадратичный член.} Так как $\mathbf B_k \in \mathbb R^{D\times D}$ симметрична, а $\mathbf z \sim \mathcal N(\mathbf 0,\sigma^2 \mathbf I_D)$,
+\begin{equation}
+    \mathbb E\big[(\mathbf z^\top \mathbf B_k \mathbf z)^2\big]
+    =
+    2\sigma^4 \operatorname{Tr}(\mathbf B_k^2) + \sigma^4 \operatorname{Tr}(\mathbf B_k)^2.
+\end{equation}
+Для симметричной матрицы $\mathbf B_k$
+\begin{equation}
+    \operatorname{Tr}(\mathbf B_k^2) \leqslant D\|\mathbf B_k\|_2^2,
+    \qquad
+    |\operatorname{Tr}(\mathbf B_k)| \leqslant D\|\mathbf B_k\|_2,
+\end{equation}
+откуда
+\begin{equation}
+    \label{eq:app-subspace-quad-trace}
+    \mathbb E\big[(\mathbf z^\top \mathbf B_k \mathbf z)^2\big]
+    \leqslant
+    \sigma^4(D^2+2D)\|\mathbf B_k\|_2^2.
+\end{equation}
+
+Далее, по субмультипликативности спектральной нормы и условию $\|\mathbf U_D\|_2 = \|\mathbf U_D^\top\|_2 = 1$,
+\begin{equation}
+    \|\mathbf B_k\|_2
+    =
+    \|\mathbf U_D^\top \mathbf A_k \mathbf U_D\|_2
+    \leqslant
+    \|\mathbf A_k\|_2.
+\end{equation}
+Используя уже полученную оценку $\|\mathbf A_k\|_2 \leqslant 2M_{\mathbf H}/(k+1)$ (см.~\eqref{eq:app-squared-Ak-norm}), имеем
+\begin{equation}
+    \|\mathbf B_k\|_2 \leqslant \frac{2M_{\mathbf H}}{k+1},
+\end{equation}
+и из~\eqref{eq:app-subspace-quad-trace}
+\begin{equation}
+    \label{eq:app-subspace-quadratic}
+    \mathbb E\big[(\mathbf z^\top \mathbf B_k \mathbf z)^2\big]
+    \leqslant
+    \frac{4\sigma^4(D^2+2D)M_{\mathbf H}^2}{(k+1)^2}.
+\end{equation}
+
+Подставляя оценки трех членов в~\eqref{eq:app-subspace-step1}, получаем
+\begin{equation}
+    \Delta_2^{(D)}(k+1)
+    \leqslant
+    \frac{
+        12M_\ell^2
+        +
+        3\sigma^2 M_{\mathbf g}^2
+        +
+        3\sigma^4(D^2+2D)M_{\mathbf H}^2
+    }{(k+1)^2},
+\end{equation}
+что и требовалось доказать. \hfill$\square$
