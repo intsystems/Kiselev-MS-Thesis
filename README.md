@@ -1,46 +1,38 @@
-# Kiselev-MS-Thesis
+# Методы определения достаточного размера выборки в параметрических моделях
 
-[![License](https://badgen.net/github/license/intsystems/Kiselev-MS-Thesis?color=green)](https://github.com/intsystems/Kiselev-MS-Thesis/blob/main/LICENSE)
-[![GitHub Contributors](https://img.shields.io/github/contributors/intsystems/Kiselev-MS-Thesis)](https://github.com/intsystems/Kiselev-MS-Thesis/graphs/contributors)
-[![GitHub Issues](https://img.shields.io/github/issues-closed/intsystems/Kiselev-MS-Thesis.svg?color=0088ff)](https://github.com/intsystems/Kiselev-MS-Thesis/issues)
-[![GitHub Pull Requests](https://img.shields.io/github/issues-pr-closed/intsystems/Kiselev-MS-Thesis.svg?color=7f29d6)](https://github.com/intsystems/Kiselev-MS-Thesis/pulls)
+[![paper](https://img.shields.io/badge/paper-pdf-red)](./paper/main.pdf)
+[![slides](https://img.shields.io/badge/slides-pdf-blue)](./slides/main.pdf)
 
-<table>
-    <tr>
-        <td align="left"> <b> Author </b> </td>
-        <td> Nikita Kiselev </td>
-    </tr>
-    <tr>
-        <td align="left"> <b> Advisor </b> </td>
-        <td> Andrey Grabovoy, PhD </td>
-    </tr>
-</table>
+<div align="center">
+    <img alt="Subspace mean-squared criterion (schematic)" width="520" src="slides/figs/criterion_squared_subspace.png">
+</div>
 
-## Assets
+<br>
 
-- [Code](code)
-- [Paper](paper/main.pdf)
-- [Slides](slides/main.pdf)
+**Автор:** Киселев Никита Сергеевич
 
-## Abstract
+**Научный руководитель:** Грабовой Андрей Валериевич, канд. физ.-мат. наук
 
-TODO
+> [!WARNING]
+> **Статус:** Черновик.
 
-## Citation
+## Аннотация
 
-If you find our work helpful, please cite us.
-```BibTeX
-@mastersthesis{kiselev2026mastersthesis,
-    author={Nikita Kiselev},
-    title={TODO},
-    school={MIPT},
-    year={2026},
-    type={Master's Thesis},
-    address={Moscow, Russia},
-    month={June}
+Работа посвящена количественному анализу стабилизации поверхности функции потерь параметрических моделей при увеличении объема обучающей выборки. Предложен унифицированный критерий стабилизации с функцией предпочтения точек в пространстве параметров и его частный случай, ограниченный на подпространство ведущих собственных векторов матрицы Гессе. Полученные теоретические оценки эмпирически проверены на полносвязной сети на MNIST и трансформерной языковой модели nanochat.
+
+## Цитирование
+
+```bibtex
+@mastersthesis{kiselev_ms_thesis,
+  author      = {Киселев, Никита Сергеевич},
+  title       = {Методы определения достаточного размера выборки в параметрических моделях},
+  type        = {Магистерская диссертация},
+  institution = {Московский физико-технический институт (национальный исследовательский университет)},
+  location    = {Москва},
+  year        = {2026},
+  langid      = {russian},
+  url         = {https://github.com/intsystems/Kiselev-MS-Thesis}
 }
 ```
 
-## Licence
-
-Our project is MIT licensed. See [LICENSE](LICENSE) for details.
+Распространяется под лицензией [MIT License](LICENSE).

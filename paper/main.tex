@@ -12,10 +12,10 @@
 
 %%% Настройка размеров шрифтов
 \makeatletter
-\renewcommand\Huge{\@setfontsize\Huge{14pt}{1.5}}
-\renewcommand\huge{\@setfontsize\huge{14pt}{1.5}}
-\renewcommand\Large{\@setfontsize\Large{14pt}{1.5}}
-\renewcommand\large{\@setfontsize\large{14pt}{1.5}}
+\renewcommand\Huge{\@setfontsize\Huge{14pt}{17pt}}
+\renewcommand\huge{\@setfontsize\huge{14pt}{17pt}}
+\renewcommand\Large{\@setfontsize\Large{14pt}{17pt}}
+\renewcommand\large{\@setfontsize\large{14pt}{17pt}}
 \makeatother
 
 %%% Аннотация
@@ -26,7 +26,15 @@
 \newpage
 \begingroup
 \hypersetup{linkcolor=black}
-\tableofcontents
+\newpage
+\begingroup
+  % временно убираем центрирование от titlesec для \section*
+  \titleformat{\section}[block]{\normalfont\Large\bfseries}{}{0pt}{}
+  % центрируем заголовок "Содержание" силами tocloft
+  \renewcommand{\cfttoctitlefont}{\hfill\normalfont\bfseries}
+  \renewcommand{\cftaftertoctitle}{\hfill\mbox{}}
+  \tableofcontents
+\endgroup
 \endgroup
 
 %%% Введение
@@ -42,6 +50,9 @@
 
 \newpage
 \input{sections/section3}
+
+\newpage
+\input{sections/section4}
 
 %%% Заключение
 \newpage

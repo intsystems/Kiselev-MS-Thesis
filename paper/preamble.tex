@@ -1,19 +1,23 @@
-\usepackage[T2A]{fontenc}
+\usepackage[T1,T2A]{fontenc}
 \usepackage[utf8]{inputenc}
-\usepackage[english,russian]{babel}
-% \usepackage{cmap}
+\usepackage[main=russian,english]{babel}
+\usepackage{cmap}
 \usepackage{url}
 \usepackage{booktabs}
 \usepackage{nicefrac}
 \usepackage{microtype}
 \usepackage{lipsum}
 \usepackage{graphicx}
-\usepackage{subfig}
 \usepackage[square,sort,comma,numbers]{natbib}
 \usepackage{doi}
 \usepackage{multicol}
 \usepackage{multirow}
+\usepackage{ragged2e}
 \usepackage{tabularx}
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}  % выравнивание по левому краю
+\newcolumntype{C}{>{\centering\arraybackslash}X}    % по центру
+\newcolumntype{R}{>{\raggedleft\arraybackslash}X}   % по правому краю
+\newcolumntype{J}{>{\justifying\arraybackslash}X}   % по ширине
 
 \usepackage{tikz}
 \usetikzlibrary{matrix}
@@ -29,7 +33,91 @@
 
 \usepackage{makecell} % diaghead in a table
 \usepackage{amsmath,amsfonts,amssymb,amsthm,mathtools,dsfont}
+\usepackage{cancel}
 \usepackage{icomma}
+
+% \usepackage{fontspec} % требует XeLaTeX, а не pdfLaTeX
+% \setmainfont{Times New Roman}
+
+\graphicspath{{figs}}
+
+\usepackage{enumitem} % Для модификаций перечневых окружений
+\usepackage{etoolbox}
+
+\makeatletter
+\expandafter\patchcmd\csname\string\algorithmic\endcsname{\itemsep\z@}{\itemsep=1.5mm}{}{}
+\makeatother
+
+\usepackage{geometry}
+\geometry{a4paper, top=2cm, bottom=2cm, left=2.5cm, right=1cm}
+\setlength{\parindent}{1.25cm}
+\usepackage{setspace}
+\onehalfspacing
+\usepackage[center]{titlesec} % секции посередине
+
+%%% Номера разделов без точки в самом счетчике
+%%% (точка добавляется отдельно в заголовках и в оглавлении ниже,
+%%%  но не появляется при \ref{...}, чтобы фразы вида
+%%%  <<в главе~\ref{sec3} рассмотрено...>> печатались как <<в главе 3 рассмотрено...>>)
+\renewcommand{\thesection}{\arabic{section}}
+\renewcommand{\thesubsection}{\arabic{section}.\arabic{subsection}}
+\renewcommand{\thesubsubsection}{\arabic{section}.\arabic{subsection}.\arabic{subsubsection}}
+%%% В заголовках разделов точка после номера ставится через titlelabel
+\titlelabel{\thetitle.\ }
+
+\usepackage{icomma}
+\usepackage{graphicx}
+\usepackage{graphicx}
+\usepackage{color}
+%\usepackage{bm}
+\usepackage{tabularx}
+\usepackage{url}
+\usepackage{multirow}
+\usepackage{wrapfig}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{indentfirst}
+
+% Теоремы
+\newtheorem{theorem}{Теорема}
+\newtheorem{lemma}{Лемма}
+\newtheorem{proposition}{Утверждение}
+\newtheorem{assumption}{Предположение}
+\newtheorem{remark}{Замечание}
+\newtheorem*{exercise}{Упражнение}
+\newtheorem*{problem}{Задача}
+
+\newtheorem{definition}{Определение}
+\newtheorem*{corollary}{Следствие}
+\newtheorem*{note}{Замечание}
+\newtheorem*{reminder}{Напоминание}
+\newtheorem*{example}{Пример}
+\newtheorem*{cexample}{Контрпример}
+\newtheorem*{solution}{Решение}
+
+\renewcommand{\abstractname}{Аннотация}
+
+\usepackage{tocloft}
+\renewcommand{\cftdotsep}{3}
+\renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
+\renewcommand{\cftsubsecleader}{\cftdotfill{\cftdotsep}}
+\renewcommand{\cftsubsubsecleader}{\cftdotfill{\cftdotsep}}
+%%% Точка после номера раздела/подраздела в оглавлении
+\renewcommand{\cftsecaftersnum}{.}
+\renewcommand{\cftsubsecaftersnum}{.}
+\renewcommand{\cftsubsubsecaftersnum}{.}
+\setcounter{tocdepth}{2}
+
+\DeclareCaptionLabelSeparator{emdash}{~--- }
+\captionsetup{
+  labelsep=emdash
+}
+
+% \numberwithin{figure}{section}
+% \numberwithin{table}{section}
+
+\captionsetup[figure]{name=Рисунок}
+\captionsetup[table]{name=Таблица}
 
 \usepackage{hyperref}
 \usepackage{xcolor}
@@ -48,59 +136,3 @@
 	citecolor=citecolor,         % на библиографию
 	urlcolor=urlcolor           % на URL
 }
-
-\graphicspath{{figs}}
-
-\usepackage{enumitem} % Для модификаций перечневых окружений
-\usepackage{etoolbox}
-
-\makeatletter
-\expandafter\patchcmd\csname\string\algorithmic\endcsname{\itemsep\z@}{\itemsep=1.5mm}{}{}
-\makeatother
-
-\usepackage{geometry}
-\geometry{a4paper, top=2cm, bottom=2cm, left=2.5cm, right=1cm}
-\setlength\parindent{5ex}    % Устанавливает длину красной строки 15pt
-%\linespread{1.3}             % Коэффициент межстрочного интервала
-\usepackage{setspace}
-\usepackage[center]{titlesec} % секции посередине
-
-%%% Точки после номеров разделов
-\renewcommand{\thesection}{\arabic{section}.}
-\renewcommand{\thesubsection}{\arabic{section}.\arabic{subsection}.}
-\renewcommand{\thesubsubsection}{\arabic{section}.\arabic{subsection}.\arabic{subsubsection}.}
-%%% Лишнее расстояние
-\titlelabel{\thetitle \ }
-
-\usepackage{icomma}
-\usepackage{amsthm}
-\usepackage{graphicx}
-\usepackage{amssymb}
-\usepackage{amsmath}
-\usepackage{graphicx}
-\usepackage{color}
-%\usepackage{bm}
-\usepackage{tabularx}
-\usepackage{url}
-\usepackage{multirow}
-\usepackage{wrapfig}
-\usepackage{caption}
-\usepackage{subcaption}
-\usepackage{indentfirst}
-
-% Теоремы
-\newtheorem{theorem}{Теорема}
-\newtheorem{lemma}{Лемма}
-\newtheorem{proposition}{Утверждение}
-\newtheorem*{exercise}{Упражнение}
-\newtheorem*{problem}{Задача}
-
-\newtheorem{definition}{Определение}
-\newtheorem*{corollary}{Следствие}
-\newtheorem*{note}{Замечание}
-\newtheorem*{reminder}{Напоминание}
-\newtheorem*{example}{Пример}
-\newtheorem*{cexample}{Контрпример}
-\newtheorem*{solution}{Решение}
-
-\renewcommand{\abstractname}{Аннотация}
