@@ -21,6 +21,13 @@
     Определение является частным случаем общего критерия~\eqref{eq:general-p-criterion} при $p=1$ и $q(\tilde{\mathbf{w}}) = \delta(\tilde{\mathbf{w}} - \mathbf{w})$, где $\delta(\mathbf{w})$ "--- дельта-функция Дирака.
 \end{remark}
 
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.5\linewidth]{criterion_abs.pdf}
+    \caption{Иллюстрация абсолютного одноточечного критерия сходимости $\Delta_{1}(k)$ в фиксированной точке окрестности минимума}
+    \label{fig:criterion-abs}
+\end{figure}
+
 В силу формулы~\eqref{eq:losses-difference-second-order-minimum} абсолютный одноточечный критерий определяется тремя вкладами: разностью значений функций потерь в точке минимума~$\mathbf w_k^*$, линейным членом, задаваемым градиентом функции~$\mathcal L_{k+1}$ в этой точке, и квадратичным членом, задаваемым разностью матриц Гессе. Поэтому его оценка сводится к последовательному ограничению каждого из этих вкладов, что приводит к следующему утверждению.
 
 \begin{theorem}
@@ -260,6 +267,13 @@
     Определение является частным случаем общего критерия~\eqref{eq:general-p-criterion} при $p=2$ и произвольной функции предпочтения $q(\mathbf{w})$, нормированной как плотность вероятностного распределения.
 \end{remark}
 
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.5\linewidth]{criterion_squared.pdf}
+    \caption{Иллюстрация среднеквадратичного критерия сходимости $\Delta_{2}(k)$ с гауссовским распределением точек в полном пространстве параметров}
+    \label{fig:criterion-squared}
+\end{figure}
+
 В общем случае поведение критерия~\eqref{eq:squared-criterion} зависит от выбора функции предпочтения~$q(\mathbf w)$. Для получения явной аналитической оценки естественно рассмотреть гауссовское распределение с центром в точке локального минимума $q(\mathbf w)=\mathcal N(\mathbf w_k^*, \sigma^2 \mathbf I_N)$. Такой выбор согласуется с локальным характером квадратичной аппроксимации и позволяет использовать известные формулы для моментов квадратичных форм гауссовских векторов.
 
 \begin{theorem}
@@ -376,6 +390,13 @@
     \end{equation}
     где функция $q(\mathbf w)$ задает плотность вероятностного распределения на аффинном подпространстве $\mathbf w_k^* + \mathcal S_D$.
 \end{definition}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.5\linewidth]{criterion_squared_subspace.pdf}
+    \caption{Иллюстрация среднеквадратичного критерия сходимости в подпространстве наибольшей кривизны $\Delta_{2}^{(D)}(k)$}
+    \label{fig:criterion-squared-subspace}
+\end{figure}
 
 \begin{remark}
     \label{rem:squared-subspace-coordinates}

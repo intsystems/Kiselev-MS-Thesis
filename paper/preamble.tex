@@ -55,12 +55,15 @@
 \onehalfspacing
 \usepackage[center]{titlesec} % секции посередине
 
-%%% Точки после номеров разделов
-\renewcommand{\thesection}{\arabic{section}.}
-\renewcommand{\thesubsection}{\arabic{section}.\arabic{subsection}.}
-\renewcommand{\thesubsubsection}{\arabic{section}.\arabic{subsection}.\arabic{subsubsection}.}
-%%% Лишнее расстояние
-\titlelabel{\thetitle \ }
+%%% Номера разделов без точки в самом счетчике
+%%% (точка добавляется отдельно в заголовках и в оглавлении ниже,
+%%%  но не появляется при \ref{...}, чтобы фразы вида
+%%%  <<в главе~\ref{sec3} рассмотрено...>> печатались как <<в главе 3 рассмотрено...>>)
+\renewcommand{\thesection}{\arabic{section}}
+\renewcommand{\thesubsection}{\arabic{section}.\arabic{subsection}}
+\renewcommand{\thesubsubsection}{\arabic{section}.\arabic{subsection}.\arabic{subsubsection}}
+%%% В заголовках разделов точка после номера ставится через titlelabel
+\titlelabel{\thetitle.\ }
 
 \usepackage{icomma}
 \usepackage{graphicx}
@@ -99,6 +102,10 @@
 \renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
 \renewcommand{\cftsubsecleader}{\cftdotfill{\cftdotsep}}
 \renewcommand{\cftsubsubsecleader}{\cftdotfill{\cftdotsep}}
+%%% Точка после номера раздела/подраздела в оглавлении
+\renewcommand{\cftsecaftersnum}{.}
+\renewcommand{\cftsubsecaftersnum}{.}
+\renewcommand{\cftsubsubsecaftersnum}{.}
 \setcounter{tocdepth}{2}
 
 \DeclareCaptionLabelSeparator{emdash}{~--- }
